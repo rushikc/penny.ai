@@ -1,8 +1,3 @@
-/*
-MIT License
-Copyright (c) 2025 rushikc <rushikc.dev@gmail.com>
-*/
-
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {Config, Expense, VendorTag, Budget} from '../Types';
 

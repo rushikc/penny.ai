@@ -1,8 +1,3 @@
-/*
-MIT License
-Copyright (c) 2025 rushikc <rushikc.dev@gmail.com>
-*/
-
 import {onAuthStateChanged, signOut, User, signInWithCredential, GoogleAuthProvider} from 'firebase/auth';
 import {auth} from '../../firebase/firebaseConfig';
 import {FinanceStorage} from '../../api/FinanceStorage';

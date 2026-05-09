@@ -1,8 +1,3 @@
-/*
-MIT License
-Copyright (c) 2025 rushikc <rushikc.dev@gmail.com>
-*/
-
 import {expenseSlice} from './expenseSlice';
 import {RootState, store} from './store';
 import {Budget, Expense, VendorTag} from '../Types';
