@@ -1,8 +1,3 @@
-/*
-MIT License
-Copyright (c) 2025 rushikc <rushikc.dev@gmail.com>
-*/
-
 import {createSlice, PayloadAction} from '@reduxjs/toolkit';
 import {AppConfig, BankConfig, Budget, Expense, VendorTag, Alert} from '../Types';
 import {FinanceStorage} from '../api/FinanceStorage';

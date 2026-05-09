@@ -1,8 +1,3 @@
-/*
-MIT License
-Copyright (c) 2025 rushikc <rushikc.dev@gmail.com>
-*/
-
 import {combineReducers, configureStore} from '@reduxjs/toolkit';
 import {expenseSlice} from './expenseSlice';
 

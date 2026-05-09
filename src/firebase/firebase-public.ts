@@ -1,9 +1,4 @@
 /*
-MIT License
-Copyright (c) 2025 rushikc <rushikc.dev@gmail.com>
-*/
-
-/*
 Firebase configuration for the mobile application.
 Uses environment variables or constants for configuration values.
 These configuration values are considered public information.

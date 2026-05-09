@@ -1,8 +1,3 @@
-/*
-MIT License
-Copyright (c) 2025 rushikc <rushikc.dev@gmail.com>
-*/
-
 import {initializeApp} from 'firebase/app';
 import {getAuth} from 'firebase/auth';
 import {firebaseConfig} from './firebase-public';

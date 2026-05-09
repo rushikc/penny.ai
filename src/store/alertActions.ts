@@ -1,8 +1,3 @@
-/*
-MIT License
-Copyright (c) 2025 rushikc <rushikc.dev@gmail.com>
-*/
-
 import {Alert} from '../Types';
 import {expenseSlice} from './expenseSlice';
 import {store} from './store';

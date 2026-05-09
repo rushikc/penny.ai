@@ -1,8 +1,3 @@
-/*
-MIT License
-Copyright (c) 2025 rushikc <rushikc.dev@gmail.com>
-*/
-
 import {initializeApp} from 'firebase/app';
 import {collection, deleteDoc, doc, getDoc, getDocs, getFirestore, query, setDoc, where} from 'firebase/firestore/lite';
 import {BUDGET_LAST_UPDATE, EXPENSE_LAST_UPDATE, TAG_LAST_UPDATE} from '../utility/constants';
