@@ -1,0 +1,167 @@
+import React, {useEffect, useRef, useState} from 'react';
+import {View, StyleSheet, ScrollView, Pressable} from 'react-native';
+import {Button, Card, Chip, FAB, Portal, Modal, ProgressBar, Text, useTheme} from 'react-native-paper';
+import {MaterialCommunityIcons} from '@expo/vector-icons';
+import {useSelector} from 'react-redux';
+import dayjs from 'dayjs';
+import {selectExpense} from '../../store/expenseActions';
+import {Budget, BudgetProgress, Expense, MonthYear} from '../../Types';
+import Loading from '../../components/Loading';
+import EditBudget from './EditBudget';
+import {isEmpty} from '../../utility/utility';
+import {SafeAreaView} from 'react-native-safe-area-context';
+
+const BudgetPage: React.FC = () => {
+  const theme = useTheme();
+  const {expenseList, budgetList, isAppLoading} = useSelector(selectExpense);
+  const [selectedMonth, setSelectedMonth] = useState<MonthYear | null>(null);
+  const [budgetProgress, setBudgetProgress] = useState<BudgetProgress[]>([]);
+  const [showFilterModal, setShowFilterModal] = useState(false);
+  const [isLoading, setLoading] = useState(true);
+  const [editBudgetOpen, setEditBudgetOpen] = useState(false);
+  const [selectedBudget, setSelectedBudget] = useState<Budget | null>(null);
+  const [selectedYear, setSelectedYear] = useState(dayjs().year());
+
+  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+  const filterExpensesByMonth = (expenses: Expense[], monthYear: MonthYear): Expense[] => {
+    return expenses.filter(expense => {
+      const d = dayjs(new Date(expense.date));
+      return d.year() === monthYear.year && d.month() === monthYear.month;
+    });
+  };
+
+  const calculateBudgetProgress = (expenses: Expense[], budgets: Budget[]): BudgetProgress[] => {
+    return budgets.map(budget => {
+      let spent: number;
+      if (budget.tagList.includes('All')) {
+        spent = expenses.filter(e => e.costType === 'debit').reduce((s, e) => s + e.cost, 0);
+      } else {
+        spent = expenses.filter(e => !isEmpty(e.tag)).filter(e => e.costType === 'debit')
+          .filter(e => budget.tagList.some(tag => e.tag?.toLowerCase() === tag.toLowerCase()))
+          .reduce((s, e) => s + e.cost, 0);
+      }
+      return {budget, spent, remaining: Math.max(0, budget.amount - spent), percentage: (spent / budget.amount) * 100};
+    });
+  };
+
+  useEffect(() => {
+    const now = dayjs();
+    setSelectedMonth({month: now.month(), year: now.year(), label: `${monthNames[now.month()]} ${now.year()}`, value: `${now.year()}-${String(now.month() + 1).padStart(2, '0')}`});
+  }, []);
+
+  useEffect(() => {
+    if (expenseList.length > 0 && budgetList.length > 0 && selectedMonth) {
+      const filtered = filterExpensesByMonth(expenseList, selectedMonth);
+      setBudgetProgress(calculateBudgetProgress(filtered, budgetList));
+    }
+    setLoading(false);
+  }, [expenseList, budgetList, selectedMonth]);
+
+  const getProgressColor = (pct: number) => pct <= 85 ? theme.colors.primary : pct <= 100 ? '#ff9800' : theme.colors.error;
+
+  const formatCurrency = (amount: number) => new Intl.NumberFormat('en-IN', {style: 'currency', currency: 'INR', minimumFractionDigits: 0, maximumFractionDigits: 0}).format(amount);
+
+  const handleBudgetUpdated = () => { setSelectedBudget(null); setEditBudgetOpen(false); };
+  const handleBudgetDeleted = (id: string) => {
+    setBudgetProgress(prev => prev.filter(p => p.budget.id !== id));
+    setSelectedBudget(null); setEditBudgetOpen(false);
+  };
+
+  const currentDate = dayjs();
+  const years = [currentDate.year(), currentDate.year() - 1, currentDate.year() - 2];
+  const maxMonth = selectedYear === currentDate.year() ? currentDate.month() : 11;
+  const monthOptions: MonthYear[] = [];
+  for (let m = 0; m <= maxMonth; m++) {
+    monthOptions.push({month: m, year: selectedYear, label: `${monthNames[m]} ${selectedYear}`, value: `${selectedYear}-${String(m + 1).padStart(2, '0')}`});
+  }
+
+  if (isAppLoading || isLoading) return <Loading />;
+
+  return (
+    <SafeAreaView style={[styles.container, {backgroundColor: theme.colors.background}]} edges={['top']}>
+      <Text variant="headlineSmall" style={[styles.header, {color: theme.colors.onSurface}]}>Budget Overview</Text>
+
+      <ScrollView contentContainerStyle={{paddingBottom: 100}}>
+        {budgetProgress.map((progress) => (
+          <Pressable key={progress.budget.id} onPress={() => { setSelectedBudget(progress.budget); setEditBudgetOpen(true); }}>
+            <Card style={[styles.card, {backgroundColor: theme.colors.surface}]}>
+              <Card.Content>
+                <View style={styles.cardHeader}>
+                  <Text variant="titleMedium" style={{color: theme.colors.onSurface, fontWeight: 'bold'}}>{progress.budget.name}</Text>
+                  <Text variant="bodyMedium" style={{color: theme.colors.onSurfaceVariant}}>{formatCurrency(progress.budget.amount)}</Text>
+                </View>
+                <View style={styles.progressInfo}>
+                  <Text variant="bodySmall" style={{color: theme.colors.onSurfaceVariant}}>Spent: {formatCurrency(progress.spent)}</Text>
+                  <Text variant="bodySmall" style={{color: theme.colors.onSurfaceVariant}}>Left: {formatCurrency(progress.remaining)}</Text>
+                </View>
+                <ProgressBar progress={Math.min(1, progress.percentage / 100)} color={getProgressColor(progress.percentage)} style={styles.progressBar} />
+                <Text variant="labelSmall" style={{color: getProgressColor(progress.percentage), textAlign: 'right', marginTop: 4}}>
+                  {progress.percentage.toFixed(1)}%
+                </Text>
+                <View style={styles.tagRow}>
+                  {progress.budget.tagList.map((tag, i) => (
+                    <Chip key={i} compact style={styles.tagChip} textStyle={{fontSize: 10}}>{tag}</Chip>
+                  ))}
+                </View>
+              </Card.Content>
+            </Card>
+          </Pressable>
+        ))}
+
+        {budgetProgress.length === 0 && (
+          <View style={styles.emptyState}>
+            <MaterialCommunityIcons name="wallet-outline" size={48} color={theme.colors.outline} />
+            <Text variant="bodyLarge" style={{color: theme.colors.outline, marginTop: 12}}>No budget data available</Text>
+          </View>
+        )}
+      </ScrollView>
+
+      <View style={[styles.bottomBar, {backgroundColor: theme.colors.surface, borderTopColor: theme.colors.outlineVariant}]}>
+        <Chip icon="filter-variant" onPress={() => setShowFilterModal(true)} compact>
+          {selectedMonth?.label || 'Select Month'}
+        </Chip>
+      </View>
+
+      <FAB icon="plus" style={[styles.fab, {backgroundColor: theme.colors.primary}]} color="white"
+        onPress={() => { setSelectedBudget(null); setEditBudgetOpen(true); }} />
+
+      <Portal>
+        <Modal visible={showFilterModal} onDismiss={() => setShowFilterModal(false)} contentContainerStyle={[styles.modal, {backgroundColor: theme.colors.surface}]}>
+          <Text variant="titleMedium" style={{marginBottom: 8}}>Year</Text>
+          <View style={styles.chipGrid}>
+            {years.map(y => <Chip key={y} selected={selectedYear === y} onPress={() => setSelectedYear(y)}>{y.toString()}</Chip>)}
+          </View>
+          <Text variant="titleMedium" style={{marginTop: 16, marginBottom: 8}}>Month</Text>
+          <View style={styles.chipGrid}>
+            {monthOptions.map(o => (
+              <Chip key={o.value} selected={selectedMonth?.value === o.value}
+                onPress={() => { setSelectedMonth(o); setShowFilterModal(false); }}>{o.label}</Chip>
+            ))}
+          </View>
+        </Modal>
+      </Portal>
+
+      <EditBudget open={editBudgetOpen} onClose={() => setEditBudgetOpen(false)} budget={selectedBudget}
+        onBudgetUpdated={handleBudgetUpdated} onBudgetDeleted={handleBudgetDeleted} />
+    </SafeAreaView>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {flex: 1},
+  header: {fontWeight: 'bold', margin: 16},
+  card: {marginHorizontal: 12, marginBottom: 10, borderRadius: 12},
+  cardHeader: {flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8},
+  progressInfo: {flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8},
+  progressBar: {height: 8, borderRadius: 4},
+  tagRow: {flexDirection: 'row', flexWrap: 'wrap', gap: 4, marginTop: 8},
+  tagChip: {height: 24},
+  emptyState: {alignItems: 'center', paddingTop: 80},
+  bottomBar: {flexDirection: 'row', paddingHorizontal: 12, paddingVertical: 8, borderTopWidth: 1, gap: 8},
+  fab: {position: 'absolute', right: 20, bottom: 76, borderRadius: 28},
+  modal: {margin: 20, padding: 20, borderRadius: 16},
+  chipGrid: {flexDirection: 'row', flexWrap: 'wrap', gap: 8},
+});
+
+export default BudgetPage;
