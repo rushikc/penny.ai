@@ -1,6 +1,6 @@
 import React, {useCallback, useEffect, useState} from 'react';
 import {View, StyleSheet, ScrollView} from 'react-native';
-import {Chip, Surface, Text, useTheme, Portal, Modal, Divider, Button} from 'react-native-paper';
+import {Chip, Text, Portal, Modal, Divider} from 'react-native-paper';
 import {MaterialCommunityIcons} from '@expo/vector-icons';
 import {ExpenseAPI} from '../../api/ExpenseAPI';
 import {sortByKey} from '../../utility/utility';
@@ -9,11 +9,14 @@ import Loading from '../../components/Loading';
 import {DateRange, CalculationOption, calculationOptions, filterExpensesByDate, filterOptions, GroupByOption, groupByOptions} from '../dataValidations';
 import {Expense} from '../../Types';
 import {SafeAreaView} from 'react-native-safe-area-context';
+import {useAppTheme} from '../../theme/useAppTheme';
+import GradientCard from '../../components/ui/GradientCard';
+import {spacing} from '../../theme/tokens';
 
 interface LineDataPoint { date: string; [key: string]: string | number; }
 
 const Insights: React.FC = () => {
-  const theme = useTheme();
+  const theme = useAppTheme();
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [isLoading, setLoading] = useState(true);
   const [timeRange, setTimeRange] = useState<DateRange>('30d');
@@ -36,6 +39,14 @@ const Insights: React.FC = () => {
 
   const getTotalSpending = () => getFilteredExpenses().reduce((sum, e) => sum + e.cost, 0).toFixed(0);
 
+  const aggregate = (vals: number[]) => {
+    if (vals.length === 0) return 0;
+    if (selectedCalculation === 'average') return vals.reduce((s, v) => s + v, 0) / vals.length;
+    const sorted = [...vals].sort((a, b) => a - b);
+    const mid = Math.floor(sorted.length / 2);
+    return sorted.length % 2 !== 0 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+  };
+
   const getAverageDailySpending = () => {
     const filtered = getFilteredExpenses();
     if (filtered.length === 0) return '0';
@@ -44,11 +55,19 @@ const Insights: React.FC = () => {
       const k = new Date(e.date).toLocaleDateString();
       byDay.set(k, (byDay.get(k) || 0) + e.cost);
     });
-    const vals = Array.from(byDay.values());
-    if (selectedCalculation === 'average') return (vals.reduce((s, v) => s + v, 0) / vals.length).toFixed(0);
-    const sorted = [...vals].sort((a, b) => a - b);
-    const mid = Math.floor(sorted.length / 2);
-    return (sorted.length % 2 !== 0 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2).toFixed(0);
+    return aggregate(Array.from(byDay.values())).toFixed(0);
+  };
+
+  const getMonthlySpending = () => {
+    const filtered = getFilteredExpenses();
+    if (filtered.length === 0) return '0';
+    const byMonth = new Map<string, number>();
+    filtered.forEach(e => {
+      const d = new Date(e.date);
+      const k = `${d.getFullYear()}-${d.getMonth()}`;
+      byMonth.set(k, (byMonth.get(k) || 0) + e.cost);
+    });
+    return aggregate(Array.from(byMonth.values())).toFixed(0);
   };
 
   const getCostRange = useCallback((cost: number) => {
@@ -97,23 +116,26 @@ const Insights: React.FC = () => {
       <ScrollView contentContainerStyle={{paddingBottom: 100}}>
         <Text variant="headlineSmall" style={[styles.header, {color: theme.colors.onSurface}]}>Expense Insights</Text>
 
-        <Surface style={[styles.card, {backgroundColor: theme.colors.primary}]} elevation={3}>
-          <Text variant="labelMedium" style={{color: 'rgba(255,255,255,0.7)'}}>Total Spending</Text>
-          <Text variant="headlineMedium" style={{color: 'white', fontWeight: 'bold'}}>₹{getTotalSpending()}</Text>
-          <Text variant="labelSmall" style={{color: 'rgba(255,255,255,0.7)'}}>
-            {filterOptions.find(o => o.id === timeRange)?.label}
-          </Text>
-        </Surface>
+        <GradientCard variant="blue" style={styles.card}>
+          <Text style={styles.metricLabel}>TOTAL SPENDING</Text>
+          <Text style={styles.metricValueLarge}>₹{getTotalSpending()}</Text>
+          <View style={styles.metricFooter}>
+            <MaterialCommunityIcons name="trending-up" size={14} color="rgba(255,255,255,0.85)" />
+            <Text style={styles.metricSub}>{filterOptions.find(o => o.id === timeRange)?.label}</Text>
+          </View>
+        </GradientCard>
 
         <View style={styles.row}>
-          <Surface style={[styles.smallCard, {backgroundColor: '#4caf50'}]} elevation={2}>
-            <Text variant="labelSmall" style={{color: 'rgba(255,255,255,0.7)'}}>Daily {selectedCalculation === 'average' ? 'Avg' : 'Median'}</Text>
-            <Text variant="titleLarge" style={{color: 'white', fontWeight: 'bold'}}>₹{getAverageDailySpending()}</Text>
-          </Surface>
-          <Surface style={[styles.smallCard, {backgroundColor: '#ff9800'}]} elevation={2}>
-            <Text variant="labelSmall" style={{color: 'rgba(255,255,255,0.7)'}}>Expenses</Text>
-            <Text variant="titleLarge" style={{color: 'white', fontWeight: 'bold'}}>{getFilteredExpenses().length}</Text>
-          </Surface>
+          <GradientCard variant="green" style={styles.smallCard}>
+            <Text style={styles.metricLabel}>DAILY {selectedCalculation === 'average' ? 'AVG' : 'MEDIAN'}</Text>
+            <Text style={styles.metricValue}>₹{getAverageDailySpending()}</Text>
+            <Text style={styles.metricSub}>Per Day</Text>
+          </GradientCard>
+          <GradientCard variant="purple" style={styles.smallCard}>
+            <Text style={styles.metricLabel}>MONTHLY {selectedCalculation === 'average' ? 'AVG' : 'MEDIAN'}</Text>
+            <Text style={styles.metricValue}>₹{getMonthlySpending()}</Text>
+            <Text style={styles.metricSub}>Per Month</Text>
+          </GradientCard>
         </View>
 
         {selectedGroupBy === 'days' ? (
@@ -123,11 +145,11 @@ const Insights: React.FC = () => {
         )}
       </ScrollView>
 
-      <View style={[styles.bottomBar, {backgroundColor: theme.colors.surface, borderTopColor: theme.colors.outlineVariant}]}>
-        <Chip icon="filter-variant" onPress={() => setShowFilterModal(true)} compact>
+      <View style={styles.bottomBar} pointerEvents="box-none">
+        <Chip icon="filter-variant" onPress={() => setShowFilterModal(true)} style={[styles.floatChip, {backgroundColor: theme.colors.custom.card}]} elevated compact>
           {filterOptions.find(o => o.id === timeRange)?.label}
         </Chip>
-        <Chip icon="sort" onPress={() => setShowGroupByModal(true)} compact>
+        <Chip icon="sort" onPress={() => setShowGroupByModal(true)} style={[styles.floatChip, {backgroundColor: theme.colors.custom.card}]} elevated compact>
           {groupByOptions.find(o => o.id === selectedGroupBy)?.label}
         </Chip>
       </View>
@@ -163,11 +185,17 @@ const Insights: React.FC = () => {
 
 const styles = StyleSheet.create({
   container: {flex: 1},
-  header: {fontWeight: 'bold', margin: 16},
-  card: {marginHorizontal: 12, padding: 16, borderRadius: 12, marginBottom: 8},
-  row: {flexDirection: 'row', gap: 8, marginHorizontal: 12, marginBottom: 8},
-  smallCard: {flex: 1, padding: 14, borderRadius: 12},
-  bottomBar: {flexDirection: 'row', paddingHorizontal: 12, paddingVertical: 8, borderTopWidth: 1, gap: 8},
+  header: {fontWeight: '700', marginHorizontal: spacing.lg, marginTop: spacing.sm, marginBottom: spacing.md},
+  card: {marginHorizontal: spacing.md, marginBottom: spacing.md},
+  row: {flexDirection: 'row', gap: spacing.md, marginHorizontal: spacing.md, marginBottom: spacing.md},
+  smallCard: {flex: 1},
+  metricLabel: {color: 'rgba(255,255,255,0.85)', fontSize: 12, fontWeight: '600', letterSpacing: 0.8},
+  metricValue: {color: '#FFFFFF', fontSize: 24, fontWeight: '800', marginTop: 6, letterSpacing: 0.2},
+  metricValueLarge: {color: '#FFFFFF', fontSize: 34, fontWeight: '800', marginTop: 6, letterSpacing: 0.2},
+  metricSub: {color: 'rgba(255,255,255,0.85)', fontSize: 12, fontWeight: '500', marginTop: 4},
+  metricFooter: {flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4},
+  bottomBar: {position: 'absolute', left: 0, right: 0, bottom: spacing.lg, flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: spacing.lg},
+  floatChip: {borderRadius: 999},
   modal: {margin: 20, padding: 20, borderRadius: 16},
   chipGrid: {flexDirection: 'row', flexWrap: 'wrap', gap: 8},
 });

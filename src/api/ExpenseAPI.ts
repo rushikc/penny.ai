@@ -1,16 +1,12 @@
-import {initializeApp} from 'firebase/app';
-import {collection, deleteDoc, doc, getDoc, getDocs, getFirestore, query, setDoc, where} from 'firebase/firestore/lite';
+import {collection, deleteDoc, doc, getDoc, getDocs, query, setDoc, where} from 'firebase/firestore/lite';
 import {BUDGET_LAST_UPDATE, EXPENSE_LAST_UPDATE, TAG_LAST_UPDATE} from '../utility/constants';
-import {firebaseConfig} from '../firebase/firebase-public';
+import {db} from '../firebase/firebaseConfig';
 import {getDateJsIdFormat, getUnixTimestamp, JSONCopy, sleep} from '../utility/utility';
 import {FinanceStorage} from './FinanceStorage';
 import {BankConfig, Budget, Expense, VendorTag} from '../Types';
 
 // eslint-disable-next-line
 export type DocumentData = { [field: string]: unknown };
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
 
 const fireStoreDoc = {
   // eslint-disable-next-line

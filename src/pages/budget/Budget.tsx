@@ -1,6 +1,6 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {View, StyleSheet, ScrollView, Pressable} from 'react-native';
-import {Button, Card, Chip, FAB, Portal, Modal, ProgressBar, Text, useTheme} from 'react-native-paper';
+import {Chip, FAB, Portal, Modal, Text} from 'react-native-paper';
 import {MaterialCommunityIcons} from '@expo/vector-icons';
 import {useSelector} from 'react-redux';
 import dayjs from 'dayjs';
@@ -10,9 +10,14 @@ import Loading from '../../components/Loading';
 import EditBudget from './EditBudget';
 import {isEmpty} from '../../utility/utility';
 import {SafeAreaView} from 'react-native-safe-area-context';
+import {useAppTheme} from '../../theme/useAppTheme';
+import Card from '../../components/ui/Card';
+import Tag from '../../components/ui/Tag';
+import ProgressTrack from '../../components/ui/ProgressTrack';
+import {spacing} from '../../theme/tokens';
 
 const BudgetPage: React.FC = () => {
-  const theme = useTheme();
+  const theme = useAppTheme();
   const {expenseList, budgetList, isAppLoading} = useSelector(selectExpense);
   const [selectedMonth, setSelectedMonth] = useState<MonthYear | null>(null);
   const [budgetProgress, setBudgetProgress] = useState<BudgetProgress[]>([]);
@@ -58,7 +63,7 @@ const BudgetPage: React.FC = () => {
     setLoading(false);
   }, [expenseList, budgetList, selectedMonth]);
 
-  const getProgressColor = (pct: number) => pct <= 85 ? theme.colors.primary : pct <= 100 ? '#ff9800' : theme.colors.error;
+  const getProgressColor = (pct: number) => pct < 85 ? theme.colors.primary : pct < 100 ? theme.colors.custom.warning : theme.colors.custom.danger;
 
   const formatCurrency = (amount: number) => new Intl.NumberFormat('en-IN', {style: 'currency', currency: 'INR', minimumFractionDigits: 0, maximumFractionDigits: 0}).format(amount);
 
@@ -83,48 +88,50 @@ const BudgetPage: React.FC = () => {
       <Text variant="headlineSmall" style={[styles.header, {color: theme.colors.onSurface}]}>Budget Overview</Text>
 
       <ScrollView contentContainerStyle={{paddingBottom: 100}}>
-        {budgetProgress.map((progress) => (
-          <Pressable key={progress.budget.id} onPress={() => { setSelectedBudget(progress.budget); setEditBudgetOpen(true); }}>
-            <Card style={[styles.card, {backgroundColor: theme.colors.surface}]}>
-              <Card.Content>
+        {budgetProgress.map((progress) => {
+          const isOver = progress.percentage >= 100;
+          return (
+            <Pressable key={progress.budget.id} onPress={() => { setSelectedBudget(progress.budget); setEditBudgetOpen(true); }}>
+              <Card style={styles.card}>
                 <View style={styles.cardHeader}>
-                  <Text variant="titleMedium" style={{color: theme.colors.onSurface, fontWeight: 'bold'}}>{progress.budget.name}</Text>
-                  <Text variant="bodyMedium" style={{color: theme.colors.onSurfaceVariant}}>{formatCurrency(progress.budget.amount)}</Text>
+                  <Text variant="titleMedium" style={{color: theme.colors.onSurface, fontWeight: '700'}}>{progress.budget.name}</Text>
+                  <Text style={[styles.amountPill, {color: theme.colors.onSurface, backgroundColor: theme.colors.surfaceVariant}]}>{formatCurrency(progress.budget.amount)}</Text>
                 </View>
                 <View style={styles.progressInfo}>
-                  <Text variant="bodySmall" style={{color: theme.colors.onSurfaceVariant}}>Spent: {formatCurrency(progress.spent)}</Text>
-                  <Text variant="bodySmall" style={{color: theme.colors.onSurfaceVariant}}>Left: {formatCurrency(progress.remaining)}</Text>
+                  <Text variant="bodyMedium" style={{color: theme.colors.custom.danger, fontWeight: '600'}}>Spent: {formatCurrency(progress.spent)}</Text>
+                  <Text variant="bodyMedium" style={{color: isOver ? theme.colors.custom.danger : theme.colors.custom.success, fontWeight: '600'}}>
+                    {isOver ? 'Over' : 'Remaining'}: {formatCurrency(progress.remaining)}
+                  </Text>
                 </View>
-                <ProgressBar progress={Math.min(1, progress.percentage / 100)} color={getProgressColor(progress.percentage)} style={styles.progressBar} />
-                <Text variant="labelSmall" style={{color: getProgressColor(progress.percentage), textAlign: 'right', marginTop: 4}}>
+                <ProgressTrack percentage={progress.percentage} />
+                <Text style={{color: getProgressColor(progress.percentage), textAlign: 'right', marginTop: 6, fontWeight: '600', fontSize: 13}}>
                   {progress.percentage.toFixed(1)}%
                 </Text>
                 <View style={styles.tagRow}>
                   {progress.budget.tagList.map((tag, i) => (
-                    <Chip key={i} compact style={styles.tagChip} textStyle={{fontSize: 10}}>{tag}</Chip>
+                    <Tag key={i} label={tag} compact />
                   ))}
                 </View>
-              </Card.Content>
-            </Card>
-          </Pressable>
-        ))}
+              </Card>
+            </Pressable>
+          );
+        })}
 
         {budgetProgress.length === 0 && (
           <View style={styles.emptyState}>
-            <MaterialCommunityIcons name="wallet-outline" size={48} color={theme.colors.outline} />
-            <Text variant="bodyLarge" style={{color: theme.colors.outline, marginTop: 12}}>No budget data available</Text>
+            <MaterialCommunityIcons name="wallet-outline" size={48} color={theme.colors.custom.textSecondary} />
+            <Text variant="bodyLarge" style={{color: theme.colors.custom.textSecondary, marginTop: 12}}>No budget data available</Text>
           </View>
         )}
       </ScrollView>
 
-      <View style={[styles.bottomBar, {backgroundColor: theme.colors.surface, borderTopColor: theme.colors.outlineVariant}]}>
-        <Chip icon="filter-variant" onPress={() => setShowFilterModal(true)} compact>
+      <View style={styles.floatingBar} pointerEvents="box-none">
+        <Chip icon="filter-variant" onPress={() => setShowFilterModal(true)} style={[styles.floatChip, {backgroundColor: theme.colors.custom.card}]} elevated compact>
           {selectedMonth?.label || 'Select Month'}
         </Chip>
+        <FAB icon="plus" style={[styles.fab, {backgroundColor: theme.colors.primary}]} color="#FFFFFF"
+          onPress={() => { setSelectedBudget(null); setEditBudgetOpen(true); }} />
       </View>
-
-      <FAB icon="plus" style={[styles.fab, {backgroundColor: theme.colors.primary}]} color="white"
-        onPress={() => { setSelectedBudget(null); setEditBudgetOpen(true); }} />
 
       <Portal>
         <Modal visible={showFilterModal} onDismiss={() => setShowFilterModal(false)} contentContainerStyle={[styles.modal, {backgroundColor: theme.colors.surface}]}>
@@ -150,16 +157,16 @@ const BudgetPage: React.FC = () => {
 
 const styles = StyleSheet.create({
   container: {flex: 1},
-  header: {fontWeight: 'bold', margin: 16},
-  card: {marginHorizontal: 12, marginBottom: 10, borderRadius: 12},
-  cardHeader: {flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8},
-  progressInfo: {flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8},
-  progressBar: {height: 8, borderRadius: 4},
-  tagRow: {flexDirection: 'row', flexWrap: 'wrap', gap: 4, marginTop: 8},
-  tagChip: {height: 24},
+  header: {fontWeight: '700', marginHorizontal: spacing.lg, marginTop: spacing.sm, marginBottom: spacing.md},
+  card: {marginHorizontal: spacing.md, marginBottom: spacing.md},
+  cardHeader: {flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.md},
+  amountPill: {fontSize: 13, fontWeight: '600', overflow: 'hidden', borderRadius: 999, paddingHorizontal: 10, paddingVertical: 4},
+  progressInfo: {flexDirection: 'row', justifyContent: 'space-between', marginBottom: spacing.sm},
+  tagRow: {flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginTop: spacing.md},
   emptyState: {alignItems: 'center', paddingTop: 80},
-  bottomBar: {flexDirection: 'row', paddingHorizontal: 12, paddingVertical: 8, borderTopWidth: 1, gap: 8},
-  fab: {position: 'absolute', right: 20, bottom: 76, borderRadius: 28},
+  floatingBar: {position: 'absolute', left: 0, right: 0, bottom: spacing.lg, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: spacing.lg},
+  floatChip: {borderRadius: 999},
+  fab: {borderRadius: 32},
   modal: {margin: 20, padding: 20, borderRadius: 16},
   chipGrid: {flexDirection: 'row', flexWrap: 'wrap', gap: 8},
 });

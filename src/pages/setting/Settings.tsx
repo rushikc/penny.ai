@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
 import {View, StyleSheet, ScrollView} from 'react-native';
-import {Button, Portal, Modal, Surface, Text, useTheme} from 'react-native-paper';
+import {Button, Portal, Modal, Text} from 'react-native-paper';
 import {useRouter} from 'expo-router';
 import {useSelector} from 'react-redux';
 import {selectExpense, toggleDarkMode} from '../../store/expenseActions';
@@ -10,10 +10,13 @@ import {useAuth} from '../../hooks/useAuth';
 import ProfileAvatar from '../../components/ProfileAvatar';
 import DashboardTile from '../../components/DashboardTile';
 import {SafeAreaView} from 'react-native-safe-area-context';
+import {AUTH_REQUIRED} from '../../utility/constants';
+import {useAppTheme} from '../../theme/useAppTheme';
+import Card from '../../components/ui/Card';
 
 const Settings: React.FC = () => {
   const router = useRouter();
-  const theme = useTheme();
+  const theme = useAppTheme();
   const {appConfig} = useSelector(selectExpense);
   const {userProfile, signOut, isLoading} = useAuth();
   const [isAppInfoModalOpen, setIsAppInfoModalOpen] = useState(false);
@@ -24,7 +27,7 @@ const Settings: React.FC = () => {
       if (!result.success && result.error) {
         createTimedAlert({type: 'error', message: result.error});
       } else {
-        router.replace('/login');
+        router.replace(AUTH_REQUIRED ? '/login' : '/(tabs)/home');
       }
     } catch (error) {
       createTimedAlert({type: 'error', message: 'Failed to sign out.'});
@@ -60,15 +63,15 @@ const Settings: React.FC = () => {
   return (
     <SafeAreaView style={[styles.container, {backgroundColor: theme.colors.background}]} edges={['top']}>
       <ScrollView contentContainerStyle={{paddingBottom: 40}}>
-        <Surface style={[styles.profileCard, {backgroundColor: theme.colors.surface}]} elevation={2}>
+        <Card style={styles.profileCard}>
           <ProfileAvatar photoUrl={userProfile.photoUrl} name={userProfile.name} size={64} />
           <View style={styles.profileInfo}>
-            <Text variant="titleLarge" style={{color: theme.colors.onSurface}}>{userProfile.name}</Text>
-            <Text variant="bodyMedium" style={{color: theme.colors.onSurfaceVariant}}>{userProfile.email}</Text>
+            <Text variant="titleLarge" style={{color: theme.colors.onSurface, fontWeight: '700'}}>{userProfile.name}</Text>
+            <Text variant="bodyMedium" style={{color: theme.colors.custom.textSecondary}}>{userProfile.email}</Text>
           </View>
-        </Surface>
+        </Card>
 
-        <Surface style={[styles.tilesContainer, {backgroundColor: theme.colors.surface}]} elevation={1}>
+        <Card noPadding style={styles.tilesContainer}>
           {dashboardTiles.map((tile, index) => (
             <DashboardTile
               key={tile.id}
@@ -81,10 +84,10 @@ const Settings: React.FC = () => {
               isLast={index === dashboardTiles.length - 1}
             />
           ))}
-        </Surface>
+        </Card>
 
         <Text variant="bodySmall" onPress={() => setIsAppInfoModalOpen(true)}
-          style={[styles.version, {color: theme.colors.outline}]}>
+          style={[styles.version, {color: theme.colors.custom.textSecondary}]}>
           penny.ai v1.1.0
         </Text>
       </ScrollView>
@@ -105,9 +108,9 @@ const Settings: React.FC = () => {
 
 const styles = StyleSheet.create({
   container: {flex: 1},
-  profileCard: {margin: 12, padding: 20, borderRadius: 16, flexDirection: 'row', alignItems: 'center'},
+  profileCard: {margin: 12, flexDirection: 'row', alignItems: 'center'},
   profileInfo: {marginLeft: 16, flex: 1},
-  tilesContainer: {margin: 12, borderRadius: 16, overflow: 'hidden'},
+  tilesContainer: {marginHorizontal: 12, marginTop: 4, overflow: 'hidden'},
   version: {textAlign: 'center', marginTop: 20},
   modal: {margin: 20, padding: 24, borderRadius: 16},
 });

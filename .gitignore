@@ -38,6 +38,9 @@ yarn-error.*
 .env*.local
 .env
 
+# Firebase service account JSON (mint script only)
+secrets/*.json
+
 # typescript
 *.tsbuildinfo
 
