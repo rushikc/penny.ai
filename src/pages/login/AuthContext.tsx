@@ -1,8 +1,3 @@
-/*
-MIT License
-Copyright (c) 2025 rushikc <rushikc.dev@gmail.com>
-*/
-
 import React, {createContext, useCallback, useContext, useEffect, useMemo, useState} from 'react';
 import {Platform} from 'react-native';
 import {User} from 'firebase/auth';
@@ -12,6 +7,8 @@ import * as Google from 'expo-auth-session/providers/google';
 import * as AuthSession from 'expo-auth-session';
 import {ResponseType} from 'expo-auth-session';
 import {AuthService} from './AuthService';
+import {ensureIosFirestoreAuth} from '../../firebase/iosDeviceAuth';
+import {AUTH_REQUIRED} from '../../utility/constants';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -98,22 +95,39 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({children}
 
   const redirectUri = useMemo(() => makeGoogleOAuthRedirectUri(), []);
 
+  useEffect(() => {
+    console.log('Generated Redirect URI:', redirectUri);
+  }, [redirectUri]);
+
   const [, , promptAsync] = Google.useAuthRequest({
     clientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ?? '',
     redirectUri,
-    // Web defaults to implicit token; Firebase needs an id_token.
-    responseType: Platform.OS === 'web' ? ResponseType.IdToken : undefined,
+    responseType: ResponseType.IdToken, // Remove the Platform.OS check
   });
 
   useEffect(() => {
-    return AuthService.onAuthStateChanged((user) => {
-      setCurrentUser(user);
-      setLoading(false);
-    });
+    let unsubscribe: (() => void) | undefined;
+
+    const bootstrapAuth = async () => {
+      if (!AUTH_REQUIRED) {
+        await ensureIosFirestoreAuth();
+      }
+      unsubscribe = AuthService.onAuthStateChanged((user) => {
+        setCurrentUser(user);
+        setLoading(false);
+      });
+    };
+
+    void bootstrapAuth();
+
+    return () => {
+      unsubscribe?.();
+    };
   }, []);
 
   const signInWithGoogle = useCallback(async () => {
-    const result = await promptAsync();
+    // showInRecents helps some iOS / Expo Go flows complete the handoff from https://auth.expo.io back to the app.
+    const result = await promptAsync({showInRecents: true});
     if (result.type !== 'success') {
       throw new Error(result.type === 'cancel' ? 'Sign in was cancelled' : `Google sign-in failed: ${result.type}`);
     }

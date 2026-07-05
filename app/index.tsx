@@ -1,6 +1,7 @@
 import {Redirect} from 'expo-router';
 import {useAuth} from '../src/pages/login/AuthContext';
 import {ActivityIndicator, View} from 'react-native';
+import {AUTH_REQUIRED} from '../src/utility/constants';
 
 export default function Index() {
   const {currentUser, loading} = useAuth();
@@ -13,7 +14,7 @@ export default function Index() {
     );
   }
 
-  if (currentUser) {
+  if (!AUTH_REQUIRED || currentUser) {
     return <Redirect href="/(tabs)/home" />;
   }
 

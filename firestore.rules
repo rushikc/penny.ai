@@ -1,0 +1,26 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAuthorizedGmailUser() {
+      let authorizedEmails = [];
+      return request.auth != null
+        && request.auth.token.email in authorizedEmails
+        && request.auth.token.email_verified == true;
+    }
+
+    // iOS app path: custom claim set when minting the custom auth token
+    function isIosDeviceTokenUser() {
+      return request.auth != null
+        && request.auth.token.penny_device_token == '';
+    }
+
+    function canAccessFirestore() {
+      return isAuthorizedGmailUser() || isIosDeviceTokenUser();
+    }
+
+    match /{document=**} {
+      allow read, write: if canAccessFirestore();
+    }
+  }
+}

@@ -2,6 +2,9 @@ export const EXPENSE_LAST_UPDATE = 'expenseLastUpdate';
 export const TAG_LAST_UPDATE = 'tagLastUpdate';
 export const BUDGET_LAST_UPDATE = 'budgetLastUpdate';
 
+/** When false, app is usable without Google sign-in (login screen remains available). */
+export const AUTH_REQUIRED = false;
+
 export const CHART_COLORS = [
   '#FF6B6B',
   '#96CEB4',

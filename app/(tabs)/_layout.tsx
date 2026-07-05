@@ -1,21 +1,25 @@
 import React, {useEffect} from 'react';
+import {Platform, StyleSheet} from 'react-native';
 import {Tabs} from 'expo-router';
 import {MaterialCommunityIcons} from '@expo/vector-icons';
-import {useTheme} from 'react-native-paper';
+import {useAppTheme} from '../../src/theme/useAppTheme';
 import {useAuth} from '../../src/pages/login/AuthContext';
 import {useSelector} from 'react-redux';
 import {selectExpense} from '../../src/store/expenseActions';
 import {loadInitialAppData} from '../../src/pages/dataValidations';
 import {Redirect} from 'expo-router';
 import {ActivityIndicator, View} from 'react-native';
+import {AUTH_REQUIRED} from '../../src/utility/constants';
 
 export default function TabLayout() {
-  const theme = useTheme();
+  const theme = useAppTheme();
   const {currentUser, loading} = useAuth();
   const {isAppLoading} = useSelector(selectExpense);
 
   useEffect(() => {
-    if (currentUser && isAppLoading) {
+    const needsSignedInUser = AUTH_REQUIRED || Platform.OS === 'ios';
+    const shouldLoad = isAppLoading && (!needsSignedInUser || currentUser);
+    if (shouldLoad) {
       loadInitialAppData();
     }
   }, [currentUser, isAppLoading]);
@@ -28,7 +32,7 @@ export default function TabLayout() {
     );
   }
 
-  if (!currentUser) {
+  if (AUTH_REQUIRED && !currentUser) {
     return <Redirect href="/login" />;
   }
 
@@ -37,18 +41,24 @@ export default function TabLayout() {
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: theme.colors.primary,
-        tabBarInactiveTintColor: theme.colors.onSurfaceVariant,
+        tabBarInactiveTintColor: theme.colors.custom.textSecondary,
         tabBarStyle: {
-          backgroundColor: theme.colors.surface,
-          borderTopColor: theme.colors.outlineVariant,
-          elevation: 8,
-          height: 60,
-          paddingBottom: 8,
-          paddingTop: 4,
+          backgroundColor: theme.colors.custom.card,
+          borderTopColor: theme.colors.custom.border,
+          borderTopWidth: StyleSheet.hairlineWidth,
+          elevation: theme.dark ? 0 : 8,
+          shadowColor: theme.colors.custom.shadow,
+          shadowOpacity: theme.dark ? 0 : 0.05,
+          shadowRadius: 10,
+          shadowOffset: {width: 0, height: -2},
+          height: Platform.OS === 'ios' ? 88 : 64,
+          paddingBottom: Platform.OS === 'ios' ? 30 : 10,
+          paddingTop: 8,
         },
         tabBarLabelStyle: {
           fontSize: 11,
           fontWeight: '600',
+          letterSpacing: 0.2,
         },
       }}
     >

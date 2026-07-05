@@ -1,7 +1,8 @@
 import React from 'react';
 import {View, StyleSheet, Pressable} from 'react-native';
-import {Text, useTheme} from 'react-native-paper';
+import {Text} from 'react-native-paper';
 import {MaterialCommunityIcons} from '@expo/vector-icons';
+import {useAppTheme} from '../theme/useAppTheme';
 
 export interface DashboardTileProps {
   id: string;
@@ -14,24 +15,24 @@ export interface DashboardTileProps {
 }
 
 const DashboardTile: React.FC<DashboardTileProps> = ({title, subtitle, icon, color, onClick, isLast = false}) => {
-  const theme = useTheme();
+  const theme = useAppTheme();
 
   return (
     <>
       <Pressable
         onPress={onClick}
-        style={({pressed}) => [styles.row, pressed && {opacity: 0.7}]}
+        style={({pressed}) => [styles.row, pressed && {backgroundColor: theme.colors.surfaceVariant}]}
       >
         <View style={[styles.iconContainer, {backgroundColor: color + '20'}]}>
-          <MaterialCommunityIcons name={icon as any} size={24} color={color} />
+          <MaterialCommunityIcons name={icon as any} size={22} color={color} />
         </View>
         <View style={styles.textContainer}>
-          <Text variant="bodyLarge" style={{color: theme.colors.onSurface}}>{title}</Text>
-          <Text variant="bodySmall" style={{color: theme.colors.onSurfaceVariant}}>{subtitle}</Text>
+          <Text variant="bodyLarge" style={{color: theme.colors.onSurface, fontWeight: '600'}}>{title}</Text>
+          <Text variant="bodySmall" style={{color: theme.colors.custom.textSecondary}}>{subtitle}</Text>
         </View>
-        <MaterialCommunityIcons name="chevron-right" size={24} color={theme.colors.onSurfaceVariant} />
+        <MaterialCommunityIcons name="chevron-right" size={22} color={theme.colors.custom.textSecondary} />
       </Pressable>
-      {!isLast && <View style={[styles.divider, {backgroundColor: theme.colors.outlineVariant}]} />}
+      {!isLast && <View style={[styles.divider, {backgroundColor: theme.colors.custom.border}]} />}
     </>
   );
 };
@@ -55,8 +56,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   divider: {
-    height: 1,
-    marginLeft: 74,
+    height: StyleSheet.hairlineWidth,
+    marginLeft: 72,
   },
 });
 

@@ -1,6 +1,6 @@
 import React, {useCallback, useEffect, useState} from 'react';
-import {View, StyleSheet, FlatList, Pressable, ScrollView} from 'react-native';
-import {Searchbar, Chip, FAB, Text, useTheme, IconButton, Portal, Modal, Divider} from 'react-native-paper';
+import {View, StyleSheet, Pressable, ScrollView} from 'react-native';
+import {Chip, FAB, Text, Portal, Modal, Divider} from 'react-native-paper';
 import {MaterialCommunityIcons} from '@expo/vector-icons';
 import {useSelector} from 'react-redux';
 import {Expense} from '../../Types';
@@ -13,9 +13,14 @@ import TagExpenses from './TagExpenses';
 import AddExpense from './AddExpense';
 import MergeExpenses from './MergeExpenses';
 import {SafeAreaView} from 'react-native-safe-area-context';
+import {useAppTheme} from '../../theme/useAppTheme';
+import Card from '../../components/ui/Card';
+import Tag from '../../components/ui/Tag';
+import SearchField from '../../components/ui/SearchField';
+import {spacing} from '../../theme/tokens';
 
 const Home: React.FC = () => {
-  const theme = useTheme();
+  const theme = useAppTheme();
   const {expenseList, isAppLoading, isTagModal} = useSelector(selectExpense);
   const [selectedRange, setSelectedRange] = useState<DateRange>('7d');
   const [filteredExpenses, setFilteredExpenses] = useState<Expense[]>([]);
@@ -114,38 +119,41 @@ const Home: React.FC = () => {
     })
     .map(([key]) => key);
 
-  const renderExpenseItem = (expense: Expense) => {
+  const renderExpenseItem = (expense: Expense, isFirst: boolean) => {
     const isSelected = selectedExpenses.some(e => e.id === expense.id);
     const vendorNames = formatVendorName(expense.vendor);
+    const isCredit = expense.costType === 'credit';
     return (
       <Pressable
         key={expense.mailId}
         onPress={() => selectionMode ? toggleExpenseSelection(expense) : setTagExpense(expense)}
         onLongPress={() => toggleExpenseSelection(expense)}
         delayLongPress={500}
-        style={[styles.expenseRow, isSelected && {backgroundColor: theme.colors.primaryContainer}]}
+        style={[
+          styles.expenseRow,
+          !isFirst && {borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: theme.colors.custom.border},
+          isSelected && {backgroundColor: theme.colors.surfaceVariant},
+        ]}
       >
-        <View style={[styles.avatar, {backgroundColor: isSelected ? theme.colors.primary : theme.colors.secondaryContainer}]}>
+        <View style={[styles.avatar, {backgroundColor: isSelected ? theme.colors.primary : theme.colors.surfaceVariant}]}>
           <MaterialCommunityIcons
             name={isSelected ? 'check' : expense.type === 'credit-card' ? 'credit-card' : 'currency-inr'}
             size={20}
-            color={isSelected ? 'white' : theme.colors.onSecondaryContainer}
+            color={isSelected ? '#FFFFFF' : theme.colors.custom.textSecondary}
           />
         </View>
         <View style={styles.expenseContent}>
-          <View style={styles.expenseHeader}>
-            <Text variant="bodyMedium" numberOfLines={1} style={[styles.vendorName, {color: theme.colors.onSurface}]}>
-              {vendorNames[0]}
-            </Text>
-            <Text variant="bodyMedium" style={{color: theme.colors.onSurface}}>
-              {expense.costType === 'debit' ? '' : '+'}₹{expense.cost}
-            </Text>
-          </View>
-          <Text variant="bodySmall" style={{color: theme.colors.onSurfaceVariant}}>{getDateMonth(expense.date)}</Text>
-          <Text variant="labelSmall" style={{color: expense.tag ? theme.colors.primary : theme.colors.outline}}>
-            {expense.tag || 'untagged'}
+          <Text variant="bodyLarge" numberOfLines={1} style={[styles.vendorName, {color: theme.colors.onSurface}]}>
+            {vendorNames[0]}
           </Text>
+          <View style={styles.metaRow}>
+            <Text variant="bodySmall" style={{color: theme.colors.custom.textSecondary}}>{getDateMonth(expense.date)}</Text>
+            <Tag label={expense.tag || 'untagged'} compact />
+          </View>
         </View>
+        <Text style={[styles.amount, {color: isCredit ? theme.colors.custom.success : theme.colors.onSurface}]}>
+          {isCredit ? '+' : ''}₹{expense.cost}
+        </Text>
       </Pressable>
     );
   };
@@ -154,18 +162,19 @@ const Home: React.FC = () => {
 
   return (
     <SafeAreaView style={[styles.container, {backgroundColor: theme.colors.background}]} edges={['top']}>
-      <Searchbar
-        placeholder="Search expenses..."
-        value={searchTerm}
-        onChangeText={setSearchTerm}
-        style={[styles.searchbar, {backgroundColor: theme.colors.surfaceVariant}]}
-      />
+      <View style={styles.searchWrap}>
+        <SearchField
+          placeholder="Search expenses..."
+          value={searchTerm}
+          onChangeText={setSearchTerm}
+        />
+      </View>
 
-      <ScrollView style={styles.list} contentContainerStyle={{paddingBottom: 100}}>
+      <ScrollView style={styles.list} contentContainerStyle={{paddingBottom: 120}}>
         {filteredExpenses.length === 0 ? (
           <View style={styles.emptyState}>
-            <MaterialCommunityIcons name="cash-remove" size={48} color={theme.colors.outline} />
-            <Text variant="bodyLarge" style={{color: theme.colors.outline, marginTop: 12}}>
+            <MaterialCommunityIcons name="cash-remove" size={48} color={theme.colors.custom.textSecondary} />
+            <Text variant="bodyLarge" style={{color: theme.colors.custom.textSecondary, marginTop: 12}}>
               {searchTerm ? 'No matching expenses' : 'No expenses found'}
             </Text>
           </View>
@@ -174,57 +183,58 @@ const Home: React.FC = () => {
             const groupData = groupedExpenses[groupKey];
             const isCollapsed = collapsedGroups[groupKey];
             return (
-              <View key={groupKey} style={[styles.groupBox, {backgroundColor: theme.colors.surface, borderColor: theme.colors.outlineVariant}]}>
+              <Card key={groupKey} noPadding style={styles.groupCard}>
                 <Pressable style={styles.groupHeader} onPress={() => toggleGroupCollapse(groupKey)}>
                   <View style={{flex: 1}}>
-                    <Text variant="titleSmall" style={{color: theme.colors.onSurface}}>
+                    <Text variant="titleMedium" style={{color: theme.colors.onSurface, fontWeight: '700'}}>
                       {selectedGroupBy === 'days' ? groupData.groupLabel : groupData.groupLabel.toLowerCase()}
                     </Text>
-                    <Text variant="bodySmall" style={{color: theme.colors.onSurfaceVariant}}>
+                    <Text variant="bodySmall" style={{color: theme.colors.custom.textSecondary}}>
                       {groupData.expenses.length} expense{groupData.expenses.length !== 1 ? 's' : ''}
                     </Text>
                   </View>
-                  <Text variant="titleSmall" style={{color: theme.colors.primary, marginRight: 4}}>
+                  <Text style={[styles.groupTotal, {color: theme.colors.onSurface}]}>
                     ₹{Math.abs(groupData.totalAmount).toFixed(0)}
                   </Text>
                   <MaterialCommunityIcons
                     name={isCollapsed ? 'chevron-down' : 'chevron-up'}
                     size={20}
-                    color={theme.colors.onSurfaceVariant}
+                    color={theme.colors.custom.textSecondary}
                   />
                 </Pressable>
-                {!isCollapsed && groupData.expenses.map(renderExpenseItem)}
-              </View>
+                {!isCollapsed && (
+                  <View style={[styles.rowGroup, {borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: theme.colors.custom.border}]}>
+                    {groupData.expenses.map((expense, index) => renderExpenseItem(expense, index === 0))}
+                  </View>
+                )}
+              </Card>
             );
           })
         )}
       </ScrollView>
 
-      {/* Bottom action bar */}
-      <View style={[styles.bottomBar, {backgroundColor: theme.colors.surface, borderTopColor: theme.colors.outlineVariant}]}>
+      {/* Floating action bar: filter chip | FAB | sort chip */}
+      <View style={styles.floatingBar} pointerEvents="box-none">
         {!selectionMode ? (
           <>
-            <Chip icon="filter-variant" onPress={() => setShowFilterModal(true)} style={styles.chip} compact>
+            <Chip icon="filter-variant" onPress={() => setShowFilterModal(true)} style={[styles.floatChip, {backgroundColor: theme.colors.custom.card}]} elevated compact>
               {filterOptions.find(o => o.id === selectedRange)?.label}
             </Chip>
-            <Chip icon="sort" onPress={() => setShowGroupByModal(true)} style={styles.chip} compact>
+            <FAB icon="plus" style={[styles.fab, {backgroundColor: theme.colors.primary}]} color="#FFFFFF" onPress={() => setShowAddExpenseDialog(true)} />
+            <Chip icon="sort" onPress={() => setShowGroupByModal(true)} style={[styles.floatChip, {backgroundColor: theme.colors.custom.card}]} elevated compact>
               {groupByOptions.find(o => o.id === selectedGroupBy)?.label}
             </Chip>
           </>
         ) : (
-          <>
+          <View style={[styles.selectionBar, {backgroundColor: theme.colors.custom.card}]}>
             <Chip icon="close" onPress={cancelSelection} style={styles.chip} compact>{selectedExpenses.length} selected</Chip>
             <Chip icon="delete" onPress={handleDeleteSelected} style={[styles.chip, {backgroundColor: theme.colors.errorContainer}]} compact>Delete</Chip>
             {selectedExpenses.length >= 2 && (
               <Chip icon="merge" onPress={() => setShowMergeDialog(true)} style={styles.chip} compact>Merge</Chip>
             )}
-          </>
+          </View>
         )}
       </View>
-
-      {!selectionMode && (
-        <FAB icon="plus" style={[styles.fab, {backgroundColor: theme.colors.primary}]} color="white" onPress={() => setShowAddExpenseDialog(true)} />
-      )}
 
       {/* Filter Modal */}
       <Portal>
@@ -271,19 +281,24 @@ const Home: React.FC = () => {
 
 const styles = StyleSheet.create({
   container: {flex: 1},
-  searchbar: {margin: 12, elevation: 1},
+  searchWrap: {paddingHorizontal: spacing.md, paddingTop: spacing.sm, paddingBottom: spacing.md},
   list: {flex: 1},
   emptyState: {alignItems: 'center', paddingTop: 80},
-  groupBox: {marginHorizontal: 12, marginBottom: 8, borderRadius: 12, borderWidth: 1, overflow: 'hidden'},
-  groupHeader: {flexDirection: 'row', alignItems: 'center', paddingHorizontal: 14, paddingVertical: 12},
-  expenseRow: {flexDirection: 'row', alignItems: 'center', paddingHorizontal: 14, paddingVertical: 10, borderTopWidth: 0.5, borderTopColor: '#eee'},
-  avatar: {width: 40, height: 40, borderRadius: 20, justifyContent: 'center', alignItems: 'center', marginRight: 12},
-  expenseContent: {flex: 1},
-  expenseHeader: {flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'},
-  vendorName: {flex: 1, marginRight: 8},
-  bottomBar: {flexDirection: 'row', paddingHorizontal: 12, paddingVertical: 8, borderTopWidth: 1, gap: 8, flexWrap: 'wrap'},
+  groupCard: {marginHorizontal: spacing.md, marginBottom: spacing.md, overflow: 'hidden'},
+  groupHeader: {flexDirection: 'row', alignItems: 'center', paddingHorizontal: spacing.lg, paddingVertical: spacing.md},
+  groupTotal: {fontSize: 16, fontWeight: '700', marginRight: spacing.xs},
+  rowGroup: {},
+  expenseRow: {flexDirection: 'row', alignItems: 'center', paddingHorizontal: spacing.lg, paddingVertical: spacing.md},
+  avatar: {width: 40, height: 40, borderRadius: 20, justifyContent: 'center', alignItems: 'center', marginRight: spacing.md},
+  expenseContent: {flex: 1, marginRight: spacing.sm},
+  vendorName: {fontWeight: '600', marginBottom: 4},
+  metaRow: {flexDirection: 'row', alignItems: 'center', gap: spacing.sm},
+  amount: {fontSize: 16, fontWeight: '700'},
+  floatingBar: {position: 'absolute', left: 0, right: 0, bottom: spacing.lg, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: spacing.lg, gap: spacing.md},
+  floatChip: {borderRadius: 999},
+  selectionBar: {flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: spacing.sm, borderRadius: 999, paddingVertical: spacing.xs, paddingHorizontal: spacing.sm, flexWrap: 'wrap'},
   chip: {marginVertical: 2},
-  fab: {position: 'absolute', right: 20, bottom: 76, borderRadius: 28},
+  fab: {borderRadius: 32},
   modal: {margin: 20, padding: 20, borderRadius: 16},
   chipGrid: {flexDirection: 'row', flexWrap: 'wrap', gap: 8},
   filterChip: {marginBottom: 4},
