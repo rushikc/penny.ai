@@ -1,0 +1,12 @@
+{
+  "name": "screenstart-marketing-start-onboarding",
+  "version": "1.0.0",
+  "description": "Lambda that starts the Screen Start onboarding Step Functions state machine.",
+  "main": "index.js",
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@aws-sdk/client-sfn": "^3.600.0"
+  }
+}

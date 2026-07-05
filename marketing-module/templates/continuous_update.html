@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>What's new on Screen Start</title>
+    <!--
+      Template: continuous_update.html
+      Purpose : Automated "continuous update" email announcing new platform
+                features. Fired by the continuous-update schedule/flow.
+      Dynamic attributes (replaced by worker_send_email using {{token}} syntax):
+        {{first_name}}        - Recipient first name
+        {{feature_title}}     - Headline of the new feature
+        {{feature_body}}      - Description of the new feature
+        {{feature_image}}     - Optional hero image for the feature
+        {{changelog_url}}     - Link to the full changelog / release notes
+        {{unsubscribe_url}}   - CAN-SPAM compliant unsubscribe link
+    -->
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        background-color: #0f0f14;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        color: #e6e6ec;
+      }
+      .wrapper { width: 100%; background-color: #0f0f14; padding: 32px 0; }
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+        background: #1a1a24;
+        border-radius: 16px;
+        overflow: hidden;
+        border: 1px solid #2a2a38;
+      }
+      .header {
+        background: linear-gradient(135deg, #1f8fff 0%, #6d5efc 100%);
+        padding: 36px 32px;
+        text-align: center;
+      }
+      .header .badge {
+        display: inline-block;
+        background: rgba(255, 255, 255, 0.18);
+        color: #ffffff;
+        padding: 4px 12px;
+        border-radius: 999px;
+        font-size: 12px;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        margin-bottom: 12px;
+      }
+      .header h1 { margin: 0; color: #ffffff; font-size: 24px; letter-spacing: -0.5px; }
+      .hero { width: 100%; display: block; }
+      .body { padding: 32px; line-height: 1.6; font-size: 16px; }
+      .body h2 { font-size: 20px; margin-top: 0; color: #ffffff; }
+      .cta {
+        display: inline-block;
+        margin: 20px 0;
+        padding: 14px 28px;
+        background: linear-gradient(135deg, #1f8fff 0%, #6d5efc 100%);
+        color: #ffffff !important;
+        text-decoration: none;
+        border-radius: 10px;
+        font-weight: 600;
+      }
+      .footer { padding: 24px 32px; font-size: 12px; color: #7a7a8c; text-align: center; }
+      .footer a { color: #9a8dff; }
+    </style>
+  </head>
+  <body>
+    <div class="wrapper">
+      <div class="container">
+        <div class="header">
+          <span class="badge">Product Update</span>
+          <h1>{{feature_title}}</h1>
+        </div>
+        <img class="hero" src="{{feature_image}}" alt="{{feature_title}}" />
+        <div class="body">
+          <p>Hi {{first_name}},</p>
+          <h2>{{feature_title}}</h2>
+          <p>{{feature_body}}</p>
+          <p style="text-align: center;">
+            <a class="cta" href="{{changelog_url}}">See what's new</a>
+          </p>
+          <p>Keep creating,<br />The Screen Start Team</p>
+        </div>
+        <div class="footer">
+          <p>You are receiving product updates from Screen Start.</p>
+          <p><a href="{{unsubscribe_url}}">Unsubscribe</a></p>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>{{author_name}} shared a new video on Screen Start</title>
+    <!--
+      Template: new_submission_broadcast.html
+      Purpose : Broadcast email sent when a user shares a new video link +
+                AI-generated documentation. Fired via POST /campaigns/broadcast.
+      Dynamic attributes (replaced by worker_send_email using {{token}} syntax):
+        {{first_name}}        - Recipient first name
+        {{author_name}}       - Name of the user who shared the video
+        {{video_title}}       - Title of the shared recording
+        {{video_link}}        - Public link to the shared video
+        {{video_thumbnail}}   - URL to the video thumbnail image
+        {{ai_doc_summary}}    - AI-generated summary of the video documentation
+        {{ai_doc_link}}       - Link to the full AI-generated document
+        {{unsubscribe_url}}   - CAN-SPAM compliant unsubscribe link
+    -->
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        background-color: #0f0f14;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        color: #e6e6ec;
+      }
+      .wrapper { width: 100%; background-color: #0f0f14; padding: 32px 0; }
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+        background: #1a1a24;
+        border-radius: 16px;
+        overflow: hidden;
+        border: 1px solid #2a2a38;
+      }
+      .header { padding: 28px 32px 8px; }
+      .eyebrow {
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        font-size: 12px;
+        color: #9a8dff;
+        margin: 0 0 6px;
+      }
+      .header h1 { margin: 0; font-size: 24px; color: #ffffff; letter-spacing: -0.5px; }
+      .thumb-wrap { padding: 20px 32px 0; }
+      .thumb {
+        width: 100%;
+        border-radius: 12px;
+        display: block;
+        border: 1px solid #2a2a38;
+      }
+      .body { padding: 24px 32px; line-height: 1.6; font-size: 16px; }
+      .ai-card {
+        background: #12121a;
+        border: 1px solid #2a2a38;
+        border-left: 3px solid #b14bff;
+        border-radius: 10px;
+        padding: 18px 20px;
+        margin: 20px 0;
+      }
+      .ai-card h3 { margin: 0 0 8px; font-size: 15px; color: #d9d2ff; }
+      .ai-card p { margin: 0; font-size: 14px; color: #b8b8c8; }
+      .cta {
+        display: inline-block;
+        margin: 8px 8px 8px 0;
+        padding: 13px 24px;
+        background: linear-gradient(135deg, #6d5efc 0%, #b14bff 100%);
+        color: #ffffff !important;
+        text-decoration: none;
+        border-radius: 10px;
+        font-weight: 600;
+      }
+      .cta-secondary {
+        display: inline-block;
+        margin: 8px 0;
+        padding: 13px 24px;
+        background: transparent;
+        border: 1px solid #3a3a4a;
+        color: #d9d2ff !important;
+        text-decoration: none;
+        border-radius: 10px;
+        font-weight: 600;
+      }
+      .footer { padding: 24px 32px; font-size: 12px; color: #7a7a8c; text-align: center; }
+      .footer a { color: #9a8dff; }
+    </style>
+  </head>
+  <body>
+    <div class="wrapper">
+      <div class="container">
+        <div class="header">
+          <p class="eyebrow">New on Screen Start</p>
+          <h1>{{author_name}} just shared &ldquo;{{video_title}}&rdquo;</h1>
+        </div>
+        <div class="thumb-wrap">
+          <a href="{{video_link}}">
+            <img class="thumb" src="{{video_thumbnail}}" alt="{{video_title}}" />
+          </a>
+        </div>
+        <div class="body">
+          <p>Hi {{first_name}},</p>
+          <p>
+            A fresh recording just landed that we think you will enjoy. Watch it
+            below and skim the AI-generated documentation to get up to speed in
+            seconds.
+          </p>
+          <div class="ai-card">
+            <h3>AI Documentation Summary</h3>
+            <p>{{ai_doc_summary}}</p>
+          </div>
+          <p>
+            <a class="cta" href="{{video_link}}">Watch the video</a>
+            <a class="cta-secondary" href="{{ai_doc_link}}">Read the full doc</a>
+          </p>
+        </div>
+        <div class="footer">
+          <p>You are receiving updates from Screen Start.</p>
+          <p><a href="{{unsubscribe_url}}">Unsubscribe</a></p>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

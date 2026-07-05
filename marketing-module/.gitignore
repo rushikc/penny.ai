@@ -1,0 +1,24 @@
+# Terraform
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+crash.log
+crash.*.log
+*.tfvars
+!example.tfvars
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraform.tfstate.lock.info
+
+# Terraform build artifacts produced by the lambda module
+**/.build/
+*.zip
+
+# Node
+node_modules/
+npm-debug.log*
+
+# OS
+.DS_Store

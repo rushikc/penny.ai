@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>Welcome to Screen Start</title>
+    <!--
+      Template: onboarding_welcome.html
+      Purpose : First email in the onboarding drip campaign.
+      Dynamic attributes (replaced by worker_send_email using {{token}} syntax):
+        {{first_name}}      - Recipient first name
+        {{dashboard_url}}   - Link to the Screen Start dashboard
+        {{help_url}}        - Link to the help center
+        {{unsubscribe_url}} - CAN-SPAM compliant unsubscribe link
+    -->
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        background-color: #0f0f14;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        color: #e6e6ec;
+      }
+      .wrapper {
+        width: 100%;
+        background-color: #0f0f14;
+        padding: 32px 0;
+      }
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+        background: #1a1a24;
+        border-radius: 16px;
+        overflow: hidden;
+        border: 1px solid #2a2a38;
+      }
+      .header {
+        background: linear-gradient(135deg, #6d5efc 0%, #b14bff 100%);
+        padding: 40px 32px;
+        text-align: center;
+      }
+      .header h1 {
+        margin: 0;
+        color: #ffffff;
+        font-size: 26px;
+        letter-spacing: -0.5px;
+      }
+      .body {
+        padding: 32px;
+        line-height: 1.6;
+        font-size: 16px;
+      }
+      .cta {
+        display: inline-block;
+        margin: 24px 0;
+        padding: 14px 28px;
+        background: linear-gradient(135deg, #6d5efc 0%, #b14bff 100%);
+        color: #ffffff !important;
+        text-decoration: none;
+        border-radius: 10px;
+        font-weight: 600;
+      }
+      .steps {
+        margin: 16px 0;
+        padding: 0;
+        list-style: none;
+      }
+      .steps li {
+        padding: 12px 0;
+        border-bottom: 1px solid #2a2a38;
+      }
+      .footer {
+        padding: 24px 32px;
+        font-size: 12px;
+        color: #7a7a8c;
+        text-align: center;
+      }
+      .footer a {
+        color: #9a8dff;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrapper">
+      <div class="container">
+        <div class="header">
+          <h1>Welcome to Screen Start</h1>
+        </div>
+        <div class="body">
+          <p>Hey {{first_name}},</p>
+          <p>
+            You just joined the fastest way to turn desktop recordings into
+            polished, shareable videos &mdash; complete with AI-generated
+            documentation. We are thrilled to have you on board.
+          </p>
+          <p>Here is how to get your first great result in minutes:</p>
+          <ul class="steps">
+            <li>1. Record or upload a desktop session.</li>
+            <li>2. Add effects, backgrounds, and zoom to make it shine.</li>
+            <li>3. Share a public link and let AI write the docs for you.</li>
+          </ul>
+          <p style="text-align: center;">
+            <a class="cta" href="{{dashboard_url}}">Create your first video</a>
+          </p>
+          <p>
+            Need a hand? Our team is one click away in the
+            <a href="{{help_url}}" style="color: #9a8dff;">Help Center</a>.
+          </p>
+          <p>Happy recording,<br />The Screen Start Team</p>
+        </div>
+        <div class="footer">
+          <p>You are receiving this because you signed up for Screen Start.</p>
+          <p><a href="{{unsubscribe_url}}">Unsubscribe</a></p>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,15 @@
+{
+  "name": "screenstart-marketing-worker-send-email",
+  "version": "1.0.0",
+  "description": "Core worker: renders S3 HTML templates with dynamic attributes and sends via Amazon SES.",
+  "main": "index.js",
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.600.0",
+    "@aws-sdk/client-sesv2": "^3.600.0",
+    "@aws-sdk/client-dynamodb": "^3.600.0",
+    "@aws-sdk/lib-dynamodb": "^3.600.0"
+  }
+}

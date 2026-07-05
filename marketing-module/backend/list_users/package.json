@@ -1,0 +1,13 @@
+{
+  "name": "screenstart-marketing-list-users",
+  "version": "1.0.0",
+  "description": "Lambda that lists marketing contacts from DynamoDB for Screen Start.",
+  "main": "index.js",
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.600.0",
+    "@aws-sdk/lib-dynamodb": "^3.600.0"
+  }
+}
