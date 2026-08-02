@@ -17,8 +17,7 @@ export default function TabLayout() {
   const {isAppLoading} = useSelector(selectExpense);
 
   useEffect(() => {
-    const needsSignedInUser = AUTH_REQUIRED || Platform.OS === 'ios';
-    const shouldLoad = isAppLoading && (!needsSignedInUser || currentUser);
+    const shouldLoad = isAppLoading && currentUser;
     if (shouldLoad) {
       loadInitialAppData();
     }

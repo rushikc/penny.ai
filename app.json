@@ -15,7 +15,8 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.pennyai.app",
+      "bundleIdentifier": "com.rushikc.pennyai",
+      "appleTeamId": "TSR2T69A93",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
@@ -26,7 +27,7 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.pennyai.app"
+      "package": "com.rushikc.pennyai"
     },
     "web": {
       "favicon": "./assets/favicon.png",
@@ -35,7 +36,8 @@
     "plugins": [
       "expo-router",
       "expo-font",
-      "expo-dev-client"
+      "expo-dev-client",
+      "./plugins/withXcode26FmtFix.js"
     ],
     "extra": {
       "router": {},

@@ -12,8 +12,7 @@
     "android:run": "expo run:android",
     "prebuild": "expo prebuild",
     "eas:build:dev": "npx eas-cli build --profile development --platform ios",
-    "eas:build:dev:device": "npx eas-cli build --profile development:device --platform ios",
-    "mint:ios-token": "node scripts/mint-ios-firestore-token.mjs"
+    "eas:build:dev:device": "npx eas-cli build --profile development:device --platform ios"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
@@ -53,7 +52,6 @@
   },
   "devDependencies": {
     "@types/react": "~19.1.0",
-    "firebase-admin": "^13.6.0",
     "typescript": "~5.9.2"
   },
   "private": true

@@ -12,7 +12,7 @@ service cloud.firestore {
     // iOS app path: custom claim set when minting the custom auth token
     function isIosDeviceTokenUser() {
       return request.auth != null
-        && request.auth.token.penny_device_token == '';
+        && request.auth.uid == 'YOUR_ADMIN_UID_HERE';
     }
 
     function canAccessFirestore() {
