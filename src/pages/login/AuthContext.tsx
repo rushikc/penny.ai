@@ -7,8 +7,7 @@ import * as Google from 'expo-auth-session/providers/google';
 import * as AuthSession from 'expo-auth-session';
 import {ResponseType} from 'expo-auth-session';
 import {AuthService} from './AuthService';
-import {ensureIosFirestoreAuth} from '../../firebase/iosDeviceAuth';
-import {AUTH_REQUIRED} from '../../utility/constants';
+import {ensureAdminSignedIn} from '../../firebase/adminAuth';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -109,12 +108,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({children}
     let unsubscribe: (() => void) | undefined;
 
     const bootstrapAuth = async () => {
-      if (!AUTH_REQUIRED) {
-        await ensureIosFirestoreAuth();
-      }
+      await ensureAdminSignedIn();
       unsubscribe = AuthService.onAuthStateChanged((user) => {
         setCurrentUser(user);
         setLoading(false);
+        if (!user) {
+          void ensureAdminSignedIn();
+        }
       });
     };
 

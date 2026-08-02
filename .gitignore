@@ -38,7 +38,7 @@ yarn-error.*
 .env*.local
 .env
 
-# Firebase service account JSON (mint script only)
+# Firebase service account JSON (optional; not used by the app)
 secrets/*.json
 
 # typescript

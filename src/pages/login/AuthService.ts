@@ -1,8 +1,25 @@
-import {onAuthStateChanged, signOut, User, signInWithCredential, GoogleAuthProvider} from 'firebase/auth';
+import {
+  GoogleAuthProvider,
+  onAuthStateChanged,
+  signInWithCredential,
+  signInWithEmailAndPassword,
+  signOut,
+  User,
+} from 'firebase/auth';
 import {auth} from '../../firebase/firebaseConfig';
 import {FinanceStorage} from '../../api/FinanceStorage';
 
 export const AuthService = {
+  signInWithEmailPassword: async (email: string, password: string) => {
+    try {
+      const result = await signInWithEmailAndPassword(auth, email, password);
+      return result.user;
+    } catch (error) {
+      console.error('Error signing in with email/password', error);
+      throw error;
+    }
+  },
+
   signInWithGoogleCredential: async (idToken: string) => {
     try {
       const credential = GoogleAuthProvider.credential(idToken);
