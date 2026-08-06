@@ -57,6 +57,7 @@ function InnerLayout() {
           <Stack.Screen name="reload-expense" options={{headerShown: true, title: 'Reload Data', animation: 'slide_from_right'}} />
           <Stack.Screen name="auto-tag-expenses" options={{headerShown: true, title: 'Auto-tag', animation: 'slide_from_right'}} />
           <Stack.Screen name="config" options={{headerShown: true, title: 'Configuration', animation: 'slide_from_right'}} />
+          <Stack.Screen name="investment-calculator" options={{headerShown: true, title: 'Investment Growth', animation: 'slide_from_right'}} />
         </Stack>
         <AlertComponent />
       </AuthProvider>
