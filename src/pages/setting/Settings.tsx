@@ -47,6 +47,7 @@ const Settings: React.FC = () => {
     {id: 'tags', title: 'Tags', subtitle: 'Manage your expense tags', icon: 'tag', color: '#ce93d8', route: '/setting-tags'},
     {id: 'theme', title: `${appConfig.darkMode ? 'Light' : 'Dark'} Theme`, subtitle: `Switch to ${appConfig.darkMode ? 'light' : 'dark'} mode`, icon: 'theme-light-dark', color: '#9c27b0', route: '/toggle-theme'},
     {id: 'reload', title: 'Reload Data', subtitle: 'Reload your expense data', icon: 'refresh', color: '#ffa726', route: '/reload-expense'},
+    {id: 'investment', title: 'Investment', subtitle: 'Project your investment growth', icon: 'finance', color: '#66bb6a', route: '/investment-calculator'},
     {id: 'manage-tag-maps', title: 'Manage Vendor Tags', subtitle: 'Configure vendor tag mappings', icon: 'map-marker', color: '#64b5f6', route: '/setting-tag-maps'},
     {id: 'auto-tag', title: 'Auto-tag Expenses', subtitle: 'Automatically tag past expenses', icon: 'auto-fix', color: '#4db6ac', route: '/auto-tag-expenses'},
     {id: 'sign-out', title: 'Sign Out', subtitle: 'Log out of your account', icon: 'logout', color: '#f44336', route: '/signout'},
