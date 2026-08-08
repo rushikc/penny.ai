@@ -11,7 +11,7 @@ import {
 import {Button, Divider, IconButton, Modal, Portal, Text} from 'react-native-paper';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useAppTheme} from '../../theme/useAppTheme';
-import {popup, radius, spacing} from '../../theme/tokens';
+import {popup, radius, spacing, typography} from '../../theme/tokens';
 
 interface BottomSheetModalProps {
   visible: boolean;
@@ -129,7 +129,7 @@ const BottomSheetModal: React.FC<BottomSheetModalProps> = ({
 
             <View style={[styles.header, {paddingHorizontal: popup.paddingHorizontal}]}>
               <View style={styles.headerText}>
-                <Text variant="titleLarge" style={[styles.title, {color: theme.colors.onSurface}]}>
+                <Text style={[styles.title, {color: theme.colors.onSurface}]}>
                   {title}
                 </Text>
                 {subtitle ? (
@@ -224,7 +224,7 @@ const styles = StyleSheet.create({
     marginTop: -spacing.xs,
   },
   title: {
-    fontWeight: '700',
+    ...typography.cardTitle,
   },
   body: {
     flexShrink: 1,

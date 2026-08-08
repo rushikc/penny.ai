@@ -9,6 +9,7 @@ import {selectExpense} from '../../store/expenseActions';
 import {formatVendorName} from '../../utility/utility';
 import {createTimedAlert} from '../../store/alertActions';
 import {useAppTheme} from '../../theme/useAppTheme';
+import {typography} from '../../theme/tokens';
 
 interface MergeExpensesProps {
   expenses: Expense[];
@@ -63,10 +64,10 @@ const MergeExpenses: React.FC<MergeExpensesProps> = ({expenses, open, onClose, o
       primaryLabel="Merge"
       onPrimary={onSaveMergedExpense}
     >
-      <Text variant="headlineSmall" style={{color: totalCost < 0 ? theme.colors.error : theme.colors.primary, textAlign: 'center'}}>
+      <Text style={[styles.totalAmount, {color: totalCost < 0 ? theme.colors.error : theme.colors.primary}]}>
         {totalCost < 0 ? '- ' : '+ '}₹{Math.abs(totalCost).toFixed(2)}
       </Text>
-      <Text variant="titleSmall" style={{marginTop: 16, marginBottom: 8}}>Select vendor</Text>
+      <Text style={[styles.sectionLabel, {color: theme.colors.onSurface}]}>Select vendor</Text>
       <View style={styles.chipGrid}>
         {uniqueVendors.map((vendor, i) => (
           <Chip key={i} selected={selectedVendor === vendor} onPress={() => setSelectedVendor(vendor)}>
@@ -74,7 +75,7 @@ const MergeExpenses: React.FC<MergeExpensesProps> = ({expenses, open, onClose, o
           </Chip>
         ))}
       </View>
-      <Text variant="titleSmall" style={{marginTop: 16, marginBottom: 8}}>Select a category</Text>
+      <Text style={[styles.sectionLabel, {color: theme.colors.onSurface, marginTop: 16}]}>Select a category</Text>
       <View style={styles.chipGrid}>
         {tagList.map((tag, i) => (
           <Chip key={i} selected={selectedTag === tag} onPress={() => setSelectedTag(tag)}>{tag}</Chip>
@@ -85,6 +86,8 @@ const MergeExpenses: React.FC<MergeExpensesProps> = ({expenses, open, onClose, o
 };
 
 const styles = StyleSheet.create({
+  totalAmount: {...typography.amount, textAlign: 'center'},
+  sectionLabel: {...typography.cardTitle, marginBottom: 8},
   chipGrid: {flexDirection: 'row', flexWrap: 'wrap', gap: 8},
 });
 

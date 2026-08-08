@@ -94,13 +94,12 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   currency: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: '600',
   },
   amountInput: {
     flex: 1,
-    fontSize: 28,
-    fontWeight: '700',
+    ...typography.amountHero,
     padding: 0,
   },
   sectionLabel: {

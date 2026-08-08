@@ -1,0 +1,49 @@
+---
+description: UI design tokens and monochrome styling conventions for penny.ai
+alwaysApply: true
+---
+
+# penny.ai UI Design Tokens
+
+All new UI must use global tokens from `src/theme/tokens.ts` and theme colors from `useAppTheme()`.
+
+## Typography
+
+Import and spread `typography.*` — never hard-code `fontSize` or `fontWeight` in components.
+
+```tsx
+// BAD
+<Text style={{fontSize: 16, fontWeight: '700'}}>Title</Text>
+
+// GOOD
+import {typography} from '../../theme/tokens';
+<Text style={typography.cardTitle}>Title</Text>
+```
+
+Token map: `screenTitle` (page headers), `cardTitle` (sections/sheets), `rowTitle` (list rows), `amountHero`/`amount`/`amountRow` (numbers), `label` (eyebrows), `tag` (pills), `body`/`caption`/`tabLabel`.
+
+Bold (`700`) is reserved for screen titles and amounts only. Prefer `600` for row/card titles.
+
+## Colors
+
+- Single accent: `theme.colors.primary` (`#0A84FF`)
+- Semantic only: `theme.colors.error`, `theme.colors.custom.success`, `theme.colors.custom.danger`
+- Tags/chips/labels: neutral gray via `neutralTag` or `getTagColor()` — no per-category rainbow colors
+- Charts only: `dataPalette` from tokens — never use `dataPalette` for UI elements
+
+```tsx
+// BAD — flashy per-tag color
+backgroundColor: getTagColor(tag).text
+
+// GOOD — neutral tag pill
+import {neutralTag} from '../../theme/tokens';
+backgroundColor: neutralTag.tint
+```
+
+## Spacing and layout
+
+Use `spacing.*`, `radius.*`, and `popup.*` from tokens. No magic numbers for padding, margins, or border radius.
+
+## Bottom nav
+
+Tab bar styling lives in `app/(tabs)/_layout.tsx`. Use `typography.tabLabel`, icon size 22, height ~72 iOS / ~58 Android.

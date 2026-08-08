@@ -59,10 +59,10 @@ const SliderControl: React.FC<SliderControlProps> = ({
   return (
     <View style={styles.sliderBlock}>
       <View style={styles.sliderHeader}>
-        <Text variant="titleSmall" style={{color: theme.colors.onSurface, fontWeight: '600'}}>
+        <Text style={[styles.sliderLabel, {color: theme.colors.onSurface}]}>
           {label}
         </Text>
-        <Text variant="titleMedium" style={{color: theme.colors.primary, fontWeight: '700'}}>
+        <Text style={[styles.sliderValue, {color: theme.colors.primary}]}>
           {valueLabel}
         </Text>
       </View>
@@ -104,7 +104,7 @@ const ProjectionRow: React.FC<ProjectionRowProps> = ({projection}) => {
   return (
     <View style={[styles.projectionRow, {borderBottomColor: theme.colors.custom.border}]}>
       <View style={styles.projectionLeft}>
-        <Text variant="bodyLarge" style={{color: theme.colors.onSurface, fontWeight: '600'}}>
+        <Text style={[styles.projectionName, {color: theme.colors.onSurface}]}>
           {projection.name}
         </Text>
         <Text variant="bodySmall" style={{color: theme.colors.custom.textSecondary, marginTop: 2}}>
@@ -114,7 +114,7 @@ const ProjectionRow: React.FC<ProjectionRowProps> = ({projection}) => {
         </Text>
       </View>
       <View style={styles.projectionRight}>
-        <Text variant="bodyLarge" style={{color: theme.colors.onSurface, fontWeight: '700', textAlign: 'right'}}>
+        <Text style={[styles.projectionAmount, {color: theme.colors.onSurface}]}>
           {isUsd ? formatUsd(projection.futureValue) : formatInr(projection.futureValue)}
         </Text>
         {isUsd ? (
@@ -204,7 +204,7 @@ const InvestmentCalculatorScreen: React.FC = () => {
       <Card noPadding style={styles.tableCard}>
         <View style={styles.tableHeader}>
           <MaterialCommunityIcons name="chart-line" size={20} color={theme.colors.primary} />
-          <Text variant="titleSmall" style={{color: theme.colors.onSurface, fontWeight: '700', marginLeft: spacing.sm}}>
+          <Text style={[styles.tableTitle, {color: theme.colors.onSurface}]}>
             Projected Growth
           </Text>
         </View>
@@ -214,7 +214,7 @@ const InvestmentCalculatorScreen: React.FC = () => {
         ))}
 
         <View style={[styles.totalRow, {backgroundColor: theme.colors.surfaceVariant}]}>
-          <Text variant="titleMedium" style={{color: theme.colors.onSurface, fontWeight: '700'}}>
+          <Text style={[styles.totalLabel, {color: theme.colors.onSurface}]}>
             Total Amount (INR)
           </Text>
           <Text style={[styles.totalAmount, {color: theme.colors.primary}]}>
@@ -257,6 +257,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: spacing.xs,
   },
+  sliderLabel: {...typography.rowTitle},
+  sliderValue: {...typography.amountRow, color: undefined},
   sliderBounds: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -276,6 +278,7 @@ const styles = StyleSheet.create({
     paddingTop: spacing.lg,
     paddingBottom: spacing.sm,
   },
+  tableTitle: {...typography.cardTitle, marginLeft: spacing.sm},
   projectionRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -288,9 +291,11 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingRight: spacing.md,
   },
+  projectionName: {...typography.rowTitle},
   projectionRight: {
     alignItems: 'flex-end',
   },
+  projectionAmount: {...typography.amountRow, textAlign: 'right'},
   totalRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -300,9 +305,9 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: radius.card,
     borderBottomRightRadius: radius.card,
   },
+  totalLabel: {...typography.cardTitle},
   totalAmount: {
     ...typography.amount,
-    fontSize: 22,
   },
   disclaimer: {
     marginTop: spacing.lg,

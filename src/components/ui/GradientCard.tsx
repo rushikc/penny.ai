@@ -1,29 +1,22 @@
 import React from 'react';
 import {StyleSheet, ViewStyle} from 'react-native';
 import {LinearGradient} from 'expo-linear-gradient';
-import {radius, spacing} from '../../theme/tokens';
+import {brand, radius, spacing} from '../../theme/tokens';
 
-export type GradientVariant = 'blue' | 'green' | 'purple';
-
-const GRADIENTS: Record<GradientVariant, [string, string]> = {
-  blue: ['#0A84FF', '#0FB9E6'],
-  green: ['#34C759', '#12A594'],
-  purple: ['#BF5AF2', '#8E5AF2'],
-};
+const GRADIENT: [string, string] = [brand.blue, '#0FB9E6'];
 
 interface GradientCardProps {
-  variant: GradientVariant;
   style?: ViewStyle;
   children: React.ReactNode;
 }
 
 /**
- * Vibrant gradient container used for the Insights metric cards.
+ * Subtle brand gradient for hero metric cards (Insights only).
  */
-const GradientCard: React.FC<GradientCardProps> = ({variant, style, children}) => {
+const GradientCard: React.FC<GradientCardProps> = ({style, children}) => {
   return (
     <LinearGradient
-      colors={GRADIENTS[variant]}
+      colors={GRADIENT}
       start={{x: 0, y: 0}}
       end={{x: 1, y: 1}}
       style={[styles.card, style]}

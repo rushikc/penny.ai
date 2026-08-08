@@ -18,7 +18,7 @@ import {useAppTheme} from '../../theme/useAppTheme';
 import Card from '../../components/ui/Card';
 import Tag from '../../components/ui/Tag';
 import SearchField from '../../components/ui/SearchField';
-import {spacing} from '../../theme/tokens';
+import {spacing, typography} from '../../theme/tokens';
 
 const Home: React.FC = () => {
   const theme = useAppTheme();
@@ -144,7 +144,7 @@ const Home: React.FC = () => {
           />
         </View>
         <View style={styles.expenseContent}>
-          <Text variant="bodyLarge" numberOfLines={1} style={[styles.vendorName, {color: theme.colors.onSurface}]}>
+          <Text numberOfLines={1} style={[styles.vendorName, {color: theme.colors.onSurface}]}>
             {vendorNames[0]}
           </Text>
           <View style={styles.metaRow}>
@@ -187,7 +187,7 @@ const Home: React.FC = () => {
               <Card key={groupKey} noPadding style={styles.groupCard}>
                 <Pressable style={styles.groupHeader} onPress={() => toggleGroupCollapse(groupKey)}>
                   <View style={{flex: 1}}>
-                    <Text variant="titleMedium" style={{color: theme.colors.onSurface, fontWeight: '700'}}>
+                    <Text style={[styles.groupTitle, {color: theme.colors.onSurface}]}>
                       {selectedGroupBy === 'days' ? groupData.groupLabel : groupData.groupLabel.toLowerCase()}
                     </Text>
                     <Text variant="bodySmall" style={{color: theme.colors.custom.textSecondary}}>
@@ -289,14 +289,15 @@ const styles = StyleSheet.create({
   emptyState: {alignItems: 'center', paddingTop: 80},
   groupCard: {marginHorizontal: spacing.md, marginBottom: spacing.md, overflow: 'hidden'},
   groupHeader: {flexDirection: 'row', alignItems: 'center', paddingHorizontal: spacing.lg, paddingVertical: spacing.md},
-  groupTotal: {fontSize: 16, fontWeight: '700', marginRight: spacing.xs},
+  groupTotal: {...typography.amountRow, marginRight: spacing.xs},
   rowGroup: {},
   expenseRow: {flexDirection: 'row', alignItems: 'center', paddingHorizontal: spacing.lg, paddingVertical: spacing.md},
   avatar: {width: 40, height: 40, borderRadius: 20, justifyContent: 'center', alignItems: 'center', marginRight: spacing.md},
   expenseContent: {flex: 1, marginRight: spacing.sm},
-  vendorName: {fontWeight: '600', marginBottom: 4},
+  vendorName: {...typography.rowTitle, marginBottom: 4},
+  groupTitle: {...typography.cardTitle},
   metaRow: {flexDirection: 'row', alignItems: 'center', gap: spacing.sm},
-  amount: {fontSize: 16, fontWeight: '700'},
+  amount: {...typography.amountRow},
   floatingBar: {position: 'absolute', left: 0, right: 0, bottom: spacing.lg, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: spacing.lg, gap: spacing.md},
   floatChip: {borderRadius: 999},
   selectionBar: {flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: spacing.sm, borderRadius: 999, paddingVertical: spacing.xs, paddingHorizontal: spacing.sm, flexWrap: 'wrap'},

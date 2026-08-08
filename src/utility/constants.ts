@@ -5,19 +5,7 @@ export const BUDGET_LAST_UPDATE = 'budgetLastUpdate';
 /** When false, app auto-signs in via .env admin credentials; login screen stays optional. */
 export const AUTH_REQUIRED = false;
 
-export const CHART_COLORS = [
-  '#FF6B6B',
-  '#96CEB4',
-  '#FFEAA7',
-  '#DDA0DD',
-  '#98D8C8',
-  '#F7DC6F',
-  '#BB8FCE',
-  '#85C1E9',
-  '#F8C471',
-  '#82E0AA',
-  '#F1948A',
-  '#AED6F1',
-  '#A9DFBF',
-  '#4ECDC4',
-];
+import {dataPalette} from '../theme/tokens';
+
+/** @deprecated Use dataPalette from theme/tokens directly. Kept for chart imports. */
+export const CHART_COLORS = [...dataPalette];

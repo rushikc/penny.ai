@@ -68,16 +68,43 @@ export const radius = {
 } as const;
 
 export const typography = {
-  /** Prominent financial totals. */
-  amount: {fontSize: 28, fontWeight: '700' as const, letterSpacing: 0.2},
-  amountLarge: {fontSize: 34, fontWeight: '800' as const, letterSpacing: 0.2},
-  title: {fontSize: 20, fontWeight: '700' as const, letterSpacing: 0.2},
+  /** Hero metric on Insights cards. */
+  amountHero: {fontSize: 24, fontWeight: '700' as const, letterSpacing: 0.2},
+  /** Amounts in sheets and modals. */
+  amount: {fontSize: 18, fontWeight: '700' as const, letterSpacing: 0.2},
+  /** Row amounts and group totals. */
+  amountRow: {fontSize: 15, fontWeight: '600' as const, letterSpacing: 0.1},
+  /** Screen-level headers (Home, Budget, Insights). */
+  screenTitle: {fontSize: 20, fontWeight: '700' as const, letterSpacing: 0.2},
+  /** Card/section headers and bottom-sheet titles. */
+  cardTitle: {fontSize: 16, fontWeight: '600' as const, letterSpacing: 0.1},
+  /** Vendor names, tile titles, list row labels. */
   rowTitle: {fontSize: 15, fontWeight: '600' as const},
   body: {fontSize: 14, fontWeight: '400' as const},
-  /** All-caps section/eyebrow labels use tracking for the fintech look. */
-  label: {fontSize: 12, fontWeight: '600' as const, letterSpacing: 0.6, textTransform: 'uppercase' as const},
   caption: {fontSize: 12, fontWeight: '400' as const},
+  /** All-caps section/eyebrow labels. */
+  label: {fontSize: 11, fontWeight: '600' as const, letterSpacing: 0.6, textTransform: 'uppercase' as const},
+  /** Tag/chip pill text. */
+  tag: {fontSize: 11, fontWeight: '600' as const, letterSpacing: 0.2},
+  /** Bottom tab bar labels. */
+  tabLabel: {fontSize: 10, fontWeight: '600' as const, letterSpacing: 0.2},
 } as const;
+
+/** Neutral tag pill colors — used for all expense tags. */
+export const neutralTag = {
+  text: lightPalette.textSecondary,
+  tint: 'rgba(142,142,147,0.14)',
+} as const;
+
+/** Muted tones for charts only — not for tags, chips, or UI accents. */
+export const dataPalette = [
+  '#5B7FA6',
+  '#6B8E8E',
+  '#7B7FA6',
+  '#A68B5B',
+  '#8E8E93',
+  '#6B7FA6',
+] as const;
 
 /** Shared layout tokens for all bottom-sheet popups across the app. */
 export const popup = {

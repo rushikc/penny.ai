@@ -14,6 +14,7 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 import {AUTH_REQUIRED} from '../../utility/constants';
 import {useAppTheme} from '../../theme/useAppTheme';
 import Card from '../../components/ui/Card';
+import {spacing, typography} from '../../theme/tokens';
 
 const Settings: React.FC = () => {
   const router = useRouter();
@@ -45,13 +46,13 @@ const Settings: React.FC = () => {
   };
 
   const dashboardTiles = [
-    {id: 'tags', title: 'Tags', subtitle: 'Manage your expense tags', icon: 'tag', color: '#ce93d8', route: '/setting-tags'},
-    {id: 'theme', title: `${appConfig.darkMode ? 'Light' : 'Dark'} Theme`, subtitle: `Switch to ${appConfig.darkMode ? 'light' : 'dark'} mode`, icon: 'theme-light-dark', color: '#9c27b0', route: '/toggle-theme'},
-    {id: 'reload', title: 'Reload Data', subtitle: 'Reload your expense data', icon: 'refresh', color: '#ffa726', route: '/reload-expense'},
-    {id: 'investment', title: 'Investment', subtitle: 'Project your investment growth', icon: 'finance', color: '#66bb6a', route: '/investment-calculator'},
-    {id: 'manage-tag-maps', title: 'Manage Vendor Tags', subtitle: 'Configure vendor tag mappings', icon: 'map-marker', color: '#64b5f6', route: '/setting-tag-maps'},
-    {id: 'auto-tag', title: 'Auto-tag Expenses', subtitle: 'Automatically tag past expenses', icon: 'auto-fix', color: '#4db6ac', route: '/auto-tag-expenses'},
-    {id: 'sign-out', title: 'Sign Out', subtitle: 'Log out of your account', icon: 'logout', color: '#f44336', route: '/signout'},
+    {id: 'tags', title: 'Tags', subtitle: 'Manage your expense tags', icon: 'tag', route: '/setting-tags'},
+    {id: 'theme', title: `${appConfig.darkMode ? 'Light' : 'Dark'} Theme`, subtitle: `Switch to ${appConfig.darkMode ? 'light' : 'dark'} mode`, icon: 'theme-light-dark', route: '/toggle-theme'},
+    {id: 'reload', title: 'Reload Data', subtitle: 'Reload your expense data', icon: 'refresh', route: '/reload-expense'},
+    {id: 'investment', title: 'Investment', subtitle: 'Project your investment growth', icon: 'finance', route: '/investment-calculator'},
+    {id: 'manage-tag-maps', title: 'Manage Vendor Tags', subtitle: 'Configure vendor tag mappings', icon: 'map-marker', route: '/setting-tag-maps'},
+    {id: 'auto-tag', title: 'Auto-tag Expenses', subtitle: 'Automatically tag past expenses', icon: 'auto-fix', route: '/auto-tag-expenses'},
+    {id: 'sign-out', title: 'Sign Out', subtitle: 'Log out of your account', icon: 'logout', color: theme.colors.error, route: '/signout'},
   ];
 
   const handleTileClick = (route: string) => {
@@ -68,7 +69,7 @@ const Settings: React.FC = () => {
         <Card style={styles.profileCard}>
           <ProfileAvatar photoUrl={userProfile.photoUrl} name={userProfile.name} size={64} />
           <View style={styles.profileInfo}>
-            <Text variant="titleLarge" style={{color: theme.colors.onSurface, fontWeight: '700'}}>{userProfile.name}</Text>
+            <Text style={[styles.profileName, {color: theme.colors.onSurface}]}>{userProfile.name}</Text>
             <Text variant="bodyMedium" style={{color: theme.colors.custom.textSecondary}}>{userProfile.email}</Text>
           </View>
         </Card>
@@ -113,6 +114,7 @@ const styles = StyleSheet.create({
   container: {flex: 1},
   profileCard: {margin: 12, flexDirection: 'row', alignItems: 'center'},
   profileInfo: {marginLeft: 16, flex: 1},
+  profileName: {...typography.cardTitle},
   tilesContainer: {marginHorizontal: 12, marginTop: 4, overflow: 'hidden'},
   version: {textAlign: 'center', marginTop: 20},
 });

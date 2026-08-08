@@ -12,7 +12,8 @@ import {Expense} from '../../Types';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {useAppTheme} from '../../theme/useAppTheme';
 import GradientCard from '../../components/ui/GradientCard';
-import {spacing} from '../../theme/tokens';
+import Card from '../../components/ui/Card';
+import {spacing, typography} from '../../theme/tokens';
 
 interface LineDataPoint { date: string; [key: string]: string | number; }
 
@@ -115,28 +116,32 @@ const Insights: React.FC = () => {
   return (
     <SafeAreaView style={[styles.container, {backgroundColor: theme.colors.background}]} edges={['top']}>
       <ScrollView contentContainerStyle={{paddingBottom: 100}}>
-        <Text variant="headlineSmall" style={[styles.header, {color: theme.colors.onSurface}]}>Expense Insights</Text>
+        <Text style={[styles.header, {color: theme.colors.onSurface}]}>Expense Insights</Text>
 
-        <GradientCard variant="blue" style={styles.card}>
-          <Text style={styles.metricLabel}>TOTAL SPENDING</Text>
-          <Text style={styles.metricValueLarge}>₹{getTotalSpending()}</Text>
+        <GradientCard style={styles.card}>
+          <Text style={styles.heroLabel}>TOTAL SPENDING</Text>
+          <Text style={styles.heroValue}>₹{getTotalSpending()}</Text>
           <View style={styles.metricFooter}>
             <MaterialCommunityIcons name="trending-up" size={14} color="rgba(255,255,255,0.85)" />
-            <Text style={styles.metricSub}>{filterOptions.find(o => o.id === timeRange)?.label}</Text>
+            <Text style={styles.heroSub}>{filterOptions.find(o => o.id === timeRange)?.label}</Text>
           </View>
         </GradientCard>
 
         <View style={styles.row}>
-          <GradientCard variant="green" style={styles.smallCard}>
-            <Text style={styles.metricLabel}>DAILY {selectedCalculation === 'average' ? 'AVG' : 'MEDIAN'}</Text>
-            <Text style={styles.metricValue}>₹{getAverageDailySpending()}</Text>
-            <Text style={styles.metricSub}>Per Day</Text>
-          </GradientCard>
-          <GradientCard variant="purple" style={styles.smallCard}>
-            <Text style={styles.metricLabel}>MONTHLY {selectedCalculation === 'average' ? 'AVG' : 'MEDIAN'}</Text>
-            <Text style={styles.metricValue}>₹{getMonthlySpending()}</Text>
-            <Text style={styles.metricSub}>Per Month</Text>
-          </GradientCard>
+          <Card style={styles.smallCard}>
+            <Text style={[styles.metricLabel, {color: theme.colors.custom.textSecondary}]}>
+              DAILY {selectedCalculation === 'average' ? 'AVG' : 'MEDIAN'}
+            </Text>
+            <Text style={[styles.metricValue, {color: theme.colors.primary}]}>₹{getAverageDailySpending()}</Text>
+            <Text style={[styles.metricSub, {color: theme.colors.custom.textSecondary}]}>Per Day</Text>
+          </Card>
+          <Card style={styles.smallCard}>
+            <Text style={[styles.metricLabel, {color: theme.colors.custom.textSecondary}]}>
+              MONTHLY {selectedCalculation === 'average' ? 'AVG' : 'MEDIAN'}
+            </Text>
+            <Text style={[styles.metricValue, {color: theme.colors.primary}]}>₹{getMonthlySpending()}</Text>
+            <Text style={[styles.metricSub, {color: theme.colors.custom.textSecondary}]}>Per Month</Text>
+          </Card>
         </View>
 
         {selectedGroupBy === 'days' ? (
@@ -180,7 +185,7 @@ const Insights: React.FC = () => {
           ))}
         </View>
         <Divider style={{marginVertical: 12}} />
-        <Text variant="titleMedium" style={{marginBottom: 8}}>Calculation</Text>
+        <Text style={[styles.modalSectionTitle, {color: theme.colors.onSurface}]}>Calculation</Text>
         <View style={styles.chipGrid}>
           {calculationOptions.map(o => (
             <Chip key={o.id} selected={selectedCalculation === o.id} onPress={() => { setSelectedCalculation(o.id); setShowGroupByModal(false); }}>{o.label}</Chip>
@@ -193,15 +198,18 @@ const Insights: React.FC = () => {
 
 const styles = StyleSheet.create({
   container: {flex: 1},
-  header: {fontWeight: '700', marginHorizontal: spacing.lg, marginTop: spacing.sm, marginBottom: spacing.md},
+  header: {...typography.screenTitle, marginHorizontal: spacing.lg, marginTop: spacing.sm, marginBottom: spacing.md},
   card: {marginHorizontal: spacing.md, marginBottom: spacing.md},
   row: {flexDirection: 'row', gap: spacing.md, marginHorizontal: spacing.md, marginBottom: spacing.md},
   smallCard: {flex: 1},
-  metricLabel: {color: 'rgba(255,255,255,0.85)', fontSize: 12, fontWeight: '600', letterSpacing: 0.8},
-  metricValue: {color: '#FFFFFF', fontSize: 24, fontWeight: '800', marginTop: 6, letterSpacing: 0.2},
-  metricValueLarge: {color: '#FFFFFF', fontSize: 34, fontWeight: '800', marginTop: 6, letterSpacing: 0.2},
-  metricSub: {color: 'rgba(255,255,255,0.85)', fontSize: 12, fontWeight: '500', marginTop: 4},
-  metricFooter: {flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4},
+  heroLabel: {...typography.label, color: 'rgba(255,255,255,0.85)'},
+  heroValue: {...typography.amountHero, color: '#FFFFFF', marginTop: spacing.xs},
+  heroSub: {...typography.caption, color: 'rgba(255,255,255,0.85)', marginTop: spacing.xs},
+  metricLabel: {...typography.label},
+  metricValue: {...typography.amount, marginTop: spacing.xs},
+  metricSub: {...typography.caption, marginTop: spacing.xs},
+  metricFooter: {flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: spacing.xs},
+  modalSectionTitle: {...typography.cardTitle, marginBottom: spacing.sm},
   bottomBar: {position: 'absolute', left: 0, right: 0, bottom: spacing.lg, flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: spacing.lg},
   floatChip: {borderRadius: 999},
   chipGrid: {flexDirection: 'row', flexWrap: 'wrap', gap: 8},
