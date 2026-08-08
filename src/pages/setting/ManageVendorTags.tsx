@@ -1,8 +1,9 @@
 import React, {useCallback, useEffect, useState} from 'react';
 import {View, StyleSheet, FlatList, ActivityIndicator} from 'react-native';
-import {Button, Chip, Dialog, IconButton, Portal, Searchbar, Text, useTheme} from 'react-native-paper';
+import {Chip, IconButton, Searchbar, Text, useTheme} from 'react-native-paper';
 import {VendorTag} from '../../Types';
 import {ExpenseAPI} from '../../api/ExpenseAPI';
+import BottomSheetModal from '../../components/ui/BottomSheetModal';
 
 const ManageVendorTags: React.FC = () => {
   const theme = useTheme();
@@ -78,28 +79,26 @@ const ManageVendorTags: React.FC = () => {
         />
       )}
 
-      <Portal>
-        <Dialog visible={editDialogOpen} onDismiss={() => setEditDialogOpen(false)}>
-          <Dialog.Title>Edit Vendor Tag</Dialog.Title>
-          <Dialog.Content>
-            {selectedVendorTag && (
-              <>
-                <Text variant="bodyLarge" style={{marginBottom: 12}}>{selectedVendorTag.vendor.toLowerCase()}</Text>
-                <Text variant="titleSmall" style={{marginBottom: 8}}>Select a category</Text>
-                <View style={styles.chipGrid}>
-                  {availableTags.map(tag => (
-                    <Chip key={tag} selected={selectedTag === tag} onPress={() => setSelectedTag(tag)}>{tag}</Chip>
-                  ))}
-                </View>
-              </>
-            )}
-          </Dialog.Content>
-          <Dialog.Actions>
-            <Button onPress={() => setEditDialogOpen(false)}>Cancel</Button>
-            <Button mode="contained" onPress={handleSaveEdit} disabled={!selectedTag}>Save</Button>
-          </Dialog.Actions>
-        </Dialog>
-      </Portal>
+      <BottomSheetModal
+        visible={editDialogOpen}
+        onDismiss={() => setEditDialogOpen(false)}
+        title="Edit Vendor Tag"
+        primaryLabel="Save"
+        onPrimary={handleSaveEdit}
+        primaryDisabled={!selectedTag}
+      >
+        {selectedVendorTag ? (
+          <>
+            <Text variant="bodyLarge" style={{marginBottom: 12}}>{selectedVendorTag.vendor.toLowerCase()}</Text>
+            <Text variant="titleSmall" style={{marginBottom: 8}}>Select a category</Text>
+            <View style={styles.chipGrid}>
+              {availableTags.map(tag => (
+                <Chip key={tag} selected={selectedTag === tag} onPress={() => setSelectedTag(tag)}>{tag}</Chip>
+              ))}
+            </View>
+          </>
+        ) : null}
+      </BottomSheetModal>
     </View>
   );
 };

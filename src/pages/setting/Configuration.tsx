@@ -1,8 +1,9 @@
 import React, {useEffect, useState} from 'react';
-import {View, StyleSheet, FlatList, ActivityIndicator, Switch} from 'react-native';
-import {Button, Dialog, IconButton, Portal, Surface, Text, TextInput, useTheme} from 'react-native-paper';
+import {View, StyleSheet, ActivityIndicator, Switch} from 'react-native';
+import {Button, IconButton, Surface, Text, TextInput, useTheme} from 'react-native-paper';
 import {MaterialCommunityIcons} from '@expo/vector-icons';
 import {ExpenseAPI} from '../../api/ExpenseAPI';
+import BottomSheetModal from '../../components/ui/BottomSheetModal';
 import {BankConfig} from '../../Types';
 
 const Configuration: React.FC = () => {
@@ -79,22 +80,20 @@ const Configuration: React.FC = () => {
         )}
       </Surface>
 
-      <Portal>
-        <Dialog visible={cardDialogOpen} onDismiss={() => setCardDialogOpen(false)}>
-          <Dialog.Title>Add Credit Card</Dialog.Title>
-          <Dialog.Content>
-            <Text variant="bodyMedium" style={{marginBottom: 12}}>Enter the last 4 digits of your HDFC credit card.</Text>
-            <TextInput label="Last 4 Digits" value={newCardDigits} mode="outlined" keyboardType="numeric" maxLength={4}
-              onChangeText={(text) => { setNewCardDigits(text.replace(/\D/g, '').slice(0, 4)); setCardError(''); }}
-              error={!!cardError} />
-            {cardError ? <Text variant="bodySmall" style={{color: theme.colors.error, marginTop: 4}}>{cardError}</Text> : null}
-          </Dialog.Content>
-          <Dialog.Actions>
-            <Button onPress={() => setCardDialogOpen(false)}>Cancel</Button>
-            <Button mode="contained" onPress={handleSaveCard}>Save</Button>
-          </Dialog.Actions>
-        </Dialog>
-      </Portal>
+      <BottomSheetModal
+        visible={cardDialogOpen}
+        onDismiss={() => setCardDialogOpen(false)}
+        title="Add Credit Card"
+        primaryLabel="Save"
+        onPrimary={handleSaveCard}
+        scrollable={false}
+      >
+        <Text variant="bodyMedium" style={{marginBottom: 12}}>Enter the last 4 digits of your HDFC credit card.</Text>
+        <TextInput label="Last 4 Digits" value={newCardDigits} mode="outlined" keyboardType="numeric" maxLength={4}
+          onChangeText={(text) => { setNewCardDigits(text.replace(/\D/g, '').slice(0, 4)); setCardError(''); }}
+          error={!!cardError} />
+        {cardError ? <Text variant="bodySmall" style={{color: theme.colors.error, marginTop: 4}}>{cardError}</Text> : null}
+      </BottomSheetModal>
     </View>
   );
 };

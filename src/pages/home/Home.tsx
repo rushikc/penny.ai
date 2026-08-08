@@ -1,6 +1,7 @@
 import React, {useCallback, useEffect, useState} from 'react';
 import {View, StyleSheet, Pressable, ScrollView} from 'react-native';
-import {Chip, FAB, Text, Portal, Modal, Divider} from 'react-native-paper';
+import {Chip, Divider, FAB, Text} from 'react-native-paper';
+import BottomSheetModal from '../../components/ui/BottomSheetModal';
 import {MaterialCommunityIcons} from '@expo/vector-icons';
 import {useSelector} from 'react-redux';
 import {Expense} from '../../Types';
@@ -236,41 +237,43 @@ const Home: React.FC = () => {
         )}
       </View>
 
-      {/* Filter Modal */}
-      <Portal>
-        <Modal visible={showFilterModal} onDismiss={() => setShowFilterModal(false)} contentContainerStyle={[styles.modal, {backgroundColor: theme.colors.surface}]}>
-          <Text variant="titleMedium" style={{marginBottom: 12, color: theme.colors.onSurface}}>Filter by date range</Text>
-          <View style={styles.chipGrid}>
-            {filterOptions.map(option => (
-              <Chip key={option.id} selected={selectedRange === option.id} onPress={() => { setSelectedRange(option.id); setShowFilterModal(false); }}
-                style={styles.filterChip}>{option.label}</Chip>
-            ))}
-          </View>
-        </Modal>
-      </Portal>
+      <BottomSheetModal
+        visible={showFilterModal}
+        onDismiss={() => setShowFilterModal(false)}
+        title="Filter by date range"
+        hideFooter
+      >
+        <View style={styles.chipGrid}>
+          {filterOptions.map(option => (
+            <Chip key={option.id} selected={selectedRange === option.id} onPress={() => { setSelectedRange(option.id); setShowFilterModal(false); }}
+              style={styles.filterChip}>{option.label}</Chip>
+          ))}
+        </View>
+      </BottomSheetModal>
 
-      {/* GroupBy Modal */}
-      <Portal>
-        <Modal visible={showGroupByModal} onDismiss={() => setShowGroupByModal(false)} contentContainerStyle={[styles.modal, {backgroundColor: theme.colors.surface}]}>
-          <Text variant="titleMedium" style={{marginBottom: 8, color: theme.colors.onSurface}}>Group by</Text>
-          <View style={styles.chipGrid}>
-            {groupByOptions.map(option => (
-              <Chip key={option.id} selected={selectedGroupBy === option.id}
-                onPress={() => { setSelectedGroupBy(option.id); setSelectedSortBy(option.id === 'days' ? 'date' : 'count'); setShowGroupByModal(false); }}
-                style={styles.filterChip}>{option.label}</Chip>
-            ))}
-          </View>
-          <Divider style={{marginVertical: 12}} />
-          <Text variant="titleMedium" style={{marginBottom: 8, color: theme.colors.onSurface}}>Sort by</Text>
-          <View style={styles.chipGrid}>
-            {sortByOptions.map(option => (
-              <Chip key={option.id} selected={selectedSortBy === option.id}
-                onPress={() => { setSelectedSortBy(option.id === selectedSortBy ? null : option.id); setShowGroupByModal(false); }}
-                style={styles.filterChip}>{option.label}</Chip>
-            ))}
-          </View>
-        </Modal>
-      </Portal>
+      <BottomSheetModal
+        visible={showGroupByModal}
+        onDismiss={() => setShowGroupByModal(false)}
+        title="Group by"
+        hideFooter
+      >
+        <View style={styles.chipGrid}>
+          {groupByOptions.map(option => (
+            <Chip key={option.id} selected={selectedGroupBy === option.id}
+              onPress={() => { setSelectedGroupBy(option.id); setSelectedSortBy(option.id === 'days' ? 'date' : 'count'); setShowGroupByModal(false); }}
+              style={styles.filterChip}>{option.label}</Chip>
+          ))}
+        </View>
+        <Divider style={{marginVertical: 12}} />
+        <Text variant="titleMedium" style={{marginBottom: 8, color: theme.colors.onSurface}}>Sort by</Text>
+        <View style={styles.chipGrid}>
+          {sortByOptions.map(option => (
+            <Chip key={option.id} selected={selectedSortBy === option.id}
+              onPress={() => { setSelectedSortBy(option.id === selectedSortBy ? null : option.id); setShowGroupByModal(false); }}
+              style={styles.filterChip}>{option.label}</Chip>
+          ))}
+        </View>
+      </BottomSheetModal>
 
       {isTagModal && <TagExpenses />}
       <MergeExpenses open={showMergeDialog} onClose={() => setShowMergeDialog(false)} expenses={selectedExpenses} onMergeComplete={handleMergeComplete} />
@@ -299,7 +302,6 @@ const styles = StyleSheet.create({
   selectionBar: {flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: spacing.sm, borderRadius: 999, paddingVertical: spacing.xs, paddingHorizontal: spacing.sm, flexWrap: 'wrap'},
   chip: {marginVertical: 2},
   fab: {borderRadius: 32},
-  modal: {margin: 20, padding: 20, borderRadius: 16},
   chipGrid: {flexDirection: 'row', flexWrap: 'wrap', gap: 8},
   filterChip: {marginBottom: 4},
 });

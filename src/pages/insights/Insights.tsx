@@ -1,6 +1,7 @@
 import React, {useCallback, useEffect, useState} from 'react';
 import {View, StyleSheet, ScrollView} from 'react-native';
-import {Chip, Text, Portal, Modal, Divider} from 'react-native-paper';
+import {Chip, Divider, Text} from 'react-native-paper';
+import BottomSheetModal from '../../components/ui/BottomSheetModal';
 import {MaterialCommunityIcons} from '@expo/vector-icons';
 import {ExpenseAPI} from '../../api/ExpenseAPI';
 import {sortByKey} from '../../utility/utility';
@@ -154,31 +155,38 @@ const Insights: React.FC = () => {
         </Chip>
       </View>
 
-      <Portal>
-        <Modal visible={showFilterModal} onDismiss={() => setShowFilterModal(false)} contentContainerStyle={[styles.modal, {backgroundColor: theme.colors.surface}]}>
-          <Text variant="titleMedium" style={{marginBottom: 12}}>Filter by date range</Text>
-          <View style={styles.chipGrid}>
-            {filterOptions.map(o => (
-              <Chip key={o.id} selected={timeRange === o.id} onPress={() => { setTimeRange(o.id); setShowFilterModal(false); }}>{o.label}</Chip>
-            ))}
-          </View>
-        </Modal>
-        <Modal visible={showGroupByModal} onDismiss={() => setShowGroupByModal(false)} contentContainerStyle={[styles.modal, {backgroundColor: theme.colors.surface}]}>
-          <Text variant="titleMedium" style={{marginBottom: 8}}>Group by</Text>
-          <View style={styles.chipGrid}>
-            {groupByOptions.map(o => (
-              <Chip key={o.id} selected={selectedGroupBy === o.id} onPress={() => { setSelectedGroupBy(o.id); setShowGroupByModal(false); }}>{o.label}</Chip>
-            ))}
-          </View>
-          <Divider style={{marginVertical: 12}} />
-          <Text variant="titleMedium" style={{marginBottom: 8}}>Calculation</Text>
-          <View style={styles.chipGrid}>
-            {calculationOptions.map(o => (
-              <Chip key={o.id} selected={selectedCalculation === o.id} onPress={() => { setSelectedCalculation(o.id); setShowGroupByModal(false); }}>{o.label}</Chip>
-            ))}
-          </View>
-        </Modal>
-      </Portal>
+      <BottomSheetModal
+        visible={showFilterModal}
+        onDismiss={() => setShowFilterModal(false)}
+        title="Filter by date range"
+        hideFooter
+      >
+        <View style={styles.chipGrid}>
+          {filterOptions.map(o => (
+            <Chip key={o.id} selected={timeRange === o.id} onPress={() => { setTimeRange(o.id); setShowFilterModal(false); }}>{o.label}</Chip>
+          ))}
+        </View>
+      </BottomSheetModal>
+
+      <BottomSheetModal
+        visible={showGroupByModal}
+        onDismiss={() => setShowGroupByModal(false)}
+        title="Group by"
+        hideFooter
+      >
+        <View style={styles.chipGrid}>
+          {groupByOptions.map(o => (
+            <Chip key={o.id} selected={selectedGroupBy === o.id} onPress={() => { setSelectedGroupBy(o.id); setShowGroupByModal(false); }}>{o.label}</Chip>
+          ))}
+        </View>
+        <Divider style={{marginVertical: 12}} />
+        <Text variant="titleMedium" style={{marginBottom: 8}}>Calculation</Text>
+        <View style={styles.chipGrid}>
+          {calculationOptions.map(o => (
+            <Chip key={o.id} selected={selectedCalculation === o.id} onPress={() => { setSelectedCalculation(o.id); setShowGroupByModal(false); }}>{o.label}</Chip>
+          ))}
+        </View>
+      </BottomSheetModal>
     </SafeAreaView>
   );
 };
@@ -196,7 +204,6 @@ const styles = StyleSheet.create({
   metricFooter: {flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4},
   bottomBar: {position: 'absolute', left: 0, right: 0, bottom: spacing.lg, flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: spacing.lg},
   floatChip: {borderRadius: 999},
-  modal: {margin: 20, padding: 20, borderRadius: 16},
   chipGrid: {flexDirection: 'row', flexWrap: 'wrap', gap: 8},
 });
 

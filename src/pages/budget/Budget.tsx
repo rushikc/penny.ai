@@ -1,6 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import {View, StyleSheet, ScrollView, Pressable} from 'react-native';
-import {Chip, FAB, Portal, Modal, Text} from 'react-native-paper';
+import {Chip, FAB, Text} from 'react-native-paper';
+import BottomSheetModal from '../../components/ui/BottomSheetModal';
 import {MaterialCommunityIcons} from '@expo/vector-icons';
 import {useSelector} from 'react-redux';
 import dayjs from 'dayjs';
@@ -133,21 +134,24 @@ const BudgetPage: React.FC = () => {
           onPress={() => { setSelectedBudget(null); setEditBudgetOpen(true); }} />
       </View>
 
-      <Portal>
-        <Modal visible={showFilterModal} onDismiss={() => setShowFilterModal(false)} contentContainerStyle={[styles.modal, {backgroundColor: theme.colors.surface}]}>
-          <Text variant="titleMedium" style={{marginBottom: 8}}>Year</Text>
-          <View style={styles.chipGrid}>
-            {years.map(y => <Chip key={y} selected={selectedYear === y} onPress={() => setSelectedYear(y)}>{y.toString()}</Chip>)}
-          </View>
-          <Text variant="titleMedium" style={{marginTop: 16, marginBottom: 8}}>Month</Text>
-          <View style={styles.chipGrid}>
-            {monthOptions.map(o => (
-              <Chip key={o.value} selected={selectedMonth?.value === o.value}
-                onPress={() => { setSelectedMonth(o); setShowFilterModal(false); }}>{o.label}</Chip>
-            ))}
-          </View>
-        </Modal>
-      </Portal>
+      <BottomSheetModal
+        visible={showFilterModal}
+        onDismiss={() => setShowFilterModal(false)}
+        title="Select Month"
+        hideFooter
+      >
+        <Text variant="titleMedium" style={{marginBottom: 8}}>Year</Text>
+        <View style={styles.chipGrid}>
+          {years.map(y => <Chip key={y} selected={selectedYear === y} onPress={() => setSelectedYear(y)}>{y.toString()}</Chip>)}
+        </View>
+        <Text variant="titleMedium" style={{marginTop: 16, marginBottom: 8}}>Month</Text>
+        <View style={styles.chipGrid}>
+          {monthOptions.map(o => (
+            <Chip key={o.value} selected={selectedMonth?.value === o.value}
+              onPress={() => { setSelectedMonth(o); setShowFilterModal(false); }}>{o.label}</Chip>
+          ))}
+        </View>
+      </BottomSheetModal>
 
       <EditBudget open={editBudgetOpen} onClose={() => setEditBudgetOpen(false)} budget={selectedBudget}
         onBudgetUpdated={handleBudgetUpdated} onBudgetDeleted={handleBudgetDeleted} />
@@ -167,7 +171,6 @@ const styles = StyleSheet.create({
   floatingBar: {position: 'absolute', left: 0, right: 0, bottom: spacing.lg, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: spacing.lg},
   floatChip: {borderRadius: 999},
   fab: {borderRadius: 32},
-  modal: {margin: 20, padding: 20, borderRadius: 16},
   chipGrid: {flexDirection: 'row', flexWrap: 'wrap', gap: 8},
 });
 

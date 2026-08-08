@@ -1,8 +1,9 @@
 import React, {useEffect, useState} from 'react';
 import {View, StyleSheet, FlatList} from 'react-native';
-import {Button, Dialog, IconButton, Portal, Text, TextInput, useTheme} from 'react-native-paper';
+import {Button, IconButton, Text, TextInput, useTheme} from 'react-native-paper';
 import {useSelector} from 'react-redux';
 import {ExpenseAPI} from '../../api/ExpenseAPI';
+import BottomSheetModal from '../../components/ui/BottomSheetModal';
 import {addTag, deleteTag, selectExpense, setTagList} from '../../store/expenseActions';
 
 const ManageTags: React.FC = () => {
@@ -57,29 +58,29 @@ const ManageTags: React.FC = () => {
         Add New Tag
       </Button>
 
-      <Portal>
-        <Dialog visible={openDialog} onDismiss={() => setOpenDialog(false)}>
-          <Dialog.Title>Add New Tag</Dialog.Title>
-          <Dialog.Content>
-            <TextInput label="Tag Name" value={newTagName} onChangeText={setNewTagName} mode="outlined" autoFocus />
-          </Dialog.Content>
-          <Dialog.Actions>
-            <Button onPress={() => setOpenDialog(false)}>Cancel</Button>
-            <Button onPress={handleAddTag} disabled={!newTagName.trim()}>Add</Button>
-          </Dialog.Actions>
-        </Dialog>
+      <BottomSheetModal
+        visible={openDialog}
+        onDismiss={() => setOpenDialog(false)}
+        title="Add New Tag"
+        primaryLabel="Add"
+        onPrimary={handleAddTag}
+        primaryDisabled={!newTagName.trim()}
+        scrollable={false}
+      >
+        <TextInput label="Tag Name" value={newTagName} onChangeText={setNewTagName} mode="outlined" autoFocus />
+      </BottomSheetModal>
 
-        <Dialog visible={deleteConfirmDialog} onDismiss={() => setDeleteConfirmDialog(false)}>
-          <Dialog.Title>Delete Tag</Dialog.Title>
-          <Dialog.Content>
-            <Text>Are you sure you want to delete "{tagToDelete}"?</Text>
-          </Dialog.Content>
-          <Dialog.Actions>
-            <Button onPress={() => setDeleteConfirmDialog(false)}>Cancel</Button>
-            <Button textColor={theme.colors.error} onPress={confirmDeleteTag}>Delete</Button>
-          </Dialog.Actions>
-        </Dialog>
-      </Portal>
+      <BottomSheetModal
+        visible={deleteConfirmDialog}
+        onDismiss={() => setDeleteConfirmDialog(false)}
+        title="Delete Tag"
+        primaryLabel="Delete"
+        onPrimary={confirmDeleteTag}
+        primaryTone="danger"
+        scrollable={false}
+      >
+        <Text>Are you sure you want to delete "{tagToDelete}"?</Text>
+      </BottomSheetModal>
     </View>
   );
 };

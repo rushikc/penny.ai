@@ -1,6 +1,7 @@
 import React, {useState} from 'react';
 import {View, StyleSheet, ScrollView} from 'react-native';
-import {Button, Portal, Modal, Text} from 'react-native-paper';
+import {Text} from 'react-native-paper';
+import BottomSheetModal from '../../components/ui/BottomSheetModal';
 import {useRouter} from 'expo-router';
 import {useSelector} from 'react-redux';
 import {selectExpense, toggleDarkMode} from '../../store/expenseActions';
@@ -93,16 +94,17 @@ const Settings: React.FC = () => {
         </Text>
       </ScrollView>
 
-      <Portal>
-        <Modal visible={isAppInfoModalOpen} onDismiss={() => setIsAppInfoModalOpen(false)}
-          contentContainerStyle={[styles.modal, {backgroundColor: theme.colors.surface}]}>
-          <Text variant="titleLarge" style={{marginBottom: 12}}>penny.ai</Text>
-          <Text variant="bodyMedium">Version: 1.1.0</Text>
-          <Text variant="bodyMedium">Author: rushikc</Text>
-          <Text variant="bodyMedium">Contact: rushikc.dev@gmail.com</Text>
-          <Button mode="contained" onPress={() => setIsAppInfoModalOpen(false)} style={{marginTop: 16}}>Close</Button>
-        </Modal>
-      </Portal>
+      <BottomSheetModal
+        visible={isAppInfoModalOpen}
+        onDismiss={() => setIsAppInfoModalOpen(false)}
+        title="penny.ai"
+        hideFooter
+        scrollable={false}
+      >
+        <Text variant="bodyMedium">Version: 1.1.0</Text>
+        <Text variant="bodyMedium" style={{marginTop: 8}}>Author: rushikc</Text>
+        <Text variant="bodyMedium" style={{marginTop: 8}}>Contact: rushikc.dev@gmail.com</Text>
+      </BottomSheetModal>
     </SafeAreaView>
   );
 };
@@ -113,7 +115,6 @@ const styles = StyleSheet.create({
   profileInfo: {marginLeft: 16, flex: 1},
   tilesContainer: {marginHorizontal: 12, marginTop: 4, overflow: 'hidden'},
   version: {textAlign: 'center', marginTop: 20},
-  modal: {margin: 20, padding: 24, borderRadius: 16},
 });
 
 export default Settings;

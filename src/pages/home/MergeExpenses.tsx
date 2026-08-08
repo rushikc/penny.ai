@@ -1,12 +1,14 @@
 import React, {useEffect, useState} from 'react';
-import {View, StyleSheet, ScrollView} from 'react-native';
-import {Button, Chip, Dialog, Portal, Text, useTheme} from 'react-native-paper';
+import {View, StyleSheet} from 'react-native';
+import {Chip, Text} from 'react-native-paper';
 import {useSelector} from 'react-redux';
 import {Expense} from '../../Types';
 import {ExpenseAPI} from '../../api/ExpenseAPI';
+import BottomSheetModal from '../../components/ui/BottomSheetModal';
 import {selectExpense} from '../../store/expenseActions';
 import {formatVendorName} from '../../utility/utility';
 import {createTimedAlert} from '../../store/alertActions';
+import {useAppTheme} from '../../theme/useAppTheme';
 
 interface MergeExpensesProps {
   expenses: Expense[];
@@ -16,7 +18,7 @@ interface MergeExpensesProps {
 }
 
 const MergeExpenses: React.FC<MergeExpensesProps> = ({expenses, open, onClose, onMergeComplete}) => {
-  const theme = useTheme();
+  const theme = useAppTheme();
   const [selectedTag, setSelectedTag] = useState('');
   const [selectedVendor, setSelectedVendor] = useState('');
   const [totalCost, setTotalCost] = useState(0);
@@ -54,43 +56,35 @@ const MergeExpenses: React.FC<MergeExpensesProps> = ({expenses, open, onClose, o
   const uniqueVendors = Array.from(new Set(expenses.map(exp => exp.vendor)));
 
   return (
-    <Portal>
-      <Dialog visible={open} onDismiss={onClose}>
-        <Dialog.Title>Merge {expenses.length} Expenses</Dialog.Title>
-        <Dialog.ScrollArea>
-          <ScrollView>
-            <View style={styles.content}>
-              <Text variant="headlineSmall" style={{color: totalCost < 0 ? theme.colors.error : theme.colors.primary, textAlign: 'center'}}>
-                {totalCost < 0 ? '- ' : '+ '}₹{Math.abs(totalCost).toFixed(2)}
-              </Text>
-              <Text variant="titleSmall" style={{marginTop: 16, marginBottom: 8}}>Select vendor</Text>
-              <View style={styles.chipGrid}>
-                {uniqueVendors.map((vendor, i) => (
-                  <Chip key={i} selected={selectedVendor === vendor} onPress={() => setSelectedVendor(vendor)}>
-                    {formatVendorName(vendor)[0]}
-                  </Chip>
-                ))}
-              </View>
-              <Text variant="titleSmall" style={{marginTop: 16, marginBottom: 8}}>Select a category</Text>
-              <View style={styles.chipGrid}>
-                {tagList.map((tag, i) => (
-                  <Chip key={i} selected={selectedTag === tag} onPress={() => setSelectedTag(tag)}>{tag}</Chip>
-                ))}
-              </View>
-            </View>
-          </ScrollView>
-        </Dialog.ScrollArea>
-        <Dialog.Actions>
-          <Button onPress={onClose}>Cancel</Button>
-          <Button mode="contained" onPress={onSaveMergedExpense}>Merge</Button>
-        </Dialog.Actions>
-      </Dialog>
-    </Portal>
+    <BottomSheetModal
+      visible={open}
+      onDismiss={onClose}
+      title={`Merge ${expenses.length} Expenses`}
+      primaryLabel="Merge"
+      onPrimary={onSaveMergedExpense}
+    >
+      <Text variant="headlineSmall" style={{color: totalCost < 0 ? theme.colors.error : theme.colors.primary, textAlign: 'center'}}>
+        {totalCost < 0 ? '- ' : '+ '}₹{Math.abs(totalCost).toFixed(2)}
+      </Text>
+      <Text variant="titleSmall" style={{marginTop: 16, marginBottom: 8}}>Select vendor</Text>
+      <View style={styles.chipGrid}>
+        {uniqueVendors.map((vendor, i) => (
+          <Chip key={i} selected={selectedVendor === vendor} onPress={() => setSelectedVendor(vendor)}>
+            {formatVendorName(vendor)[0]}
+          </Chip>
+        ))}
+      </View>
+      <Text variant="titleSmall" style={{marginTop: 16, marginBottom: 8}}>Select a category</Text>
+      <View style={styles.chipGrid}>
+        {tagList.map((tag, i) => (
+          <Chip key={i} selected={selectedTag === tag} onPress={() => setSelectedTag(tag)}>{tag}</Chip>
+        ))}
+      </View>
+    </BottomSheetModal>
   );
 };
 
 const styles = StyleSheet.create({
-  content: {paddingHorizontal: 16, paddingVertical: 8},
   chipGrid: {flexDirection: 'row', flexWrap: 'wrap', gap: 8},
 });
 

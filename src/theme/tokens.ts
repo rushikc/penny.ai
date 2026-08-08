@@ -79,4 +79,22 @@ export const typography = {
   caption: {fontSize: 12, fontWeight: '400' as const},
 } as const;
 
+/** Shared layout tokens for all bottom-sheet popups across the app. */
+export const popup = {
+  maxWidth: 480,
+  radius: radius.card + 4,
+  /** Gap between popup edges and the screen edge. */
+  screenInsetHorizontal: spacing.md,
+  screenInsetBottom: spacing.sm,
+  handleWidth: 36,
+  handleHeight: 5,
+  paddingHorizontal: spacing.xl,
+  headerPaddingBottom: spacing.md,
+  footerPaddingHorizontal: spacing.lg,
+  gap: spacing.sm,
+  primaryMinWidth: 96,
+  closeIconSize: 22,
+  defaultMaxHeightRatio: 0.9,
+} as const;
+
 export type AppPalette = typeof lightPalette;

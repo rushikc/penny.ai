@@ -97,7 +97,7 @@ export function calculateInvestmentProjections(
   return {projections, totalInr};
 }
 
-/** Mock saved investment data until a real data source is wired up. */
+/** Demo investment data until a real data source is wired up. */
 export async function fetchInvestmentData(): Promise<InvestmentAsset[]> {
   return [
     {
