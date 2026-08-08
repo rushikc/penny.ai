@@ -1,32 +1,44 @@
-import React, {useState} from 'react';
-import {View, StyleSheet, ScrollView} from 'react-native';
-import {Button, Chip, Dialog, Portal, Switch, Text, useTheme} from 'react-native-paper';
+import React, {useEffect, useState} from 'react';
+import {StyleSheet, View} from 'react-native';
+import {Switch, Text} from 'react-native-paper';
 import {useSelector} from 'react-redux';
 import {ExpenseAPI} from '../../api/ExpenseAPI';
+import BottomSheetModal from '../../components/ui/BottomSheetModal';
+import CategoryPicker from '../../components/ui/CategoryPicker';
+import Tag from '../../components/ui/Tag';
 import {hideTagExpense, selectExpense, setTagMap, updateExpense} from '../../store/expenseActions';
+import {useAppTheme} from '../../theme/useAppTheme';
+import {spacing, typography} from '../../theme/tokens';
 import {formatVendorName, getDateMonthTime, JSONCopy} from '../../utility/utility';
 
 const TagExpenses: React.FC = () => {
-  const theme = useTheme();
-  const [selectedTag, setSelectedTag] = useState<string[]>([]);
+  const theme = useAppTheme();
+  const [selectedTag, setSelectedTag] = useState('');
   const [autoTag, setAutoTag] = useState(false);
   const {vendorTagList, expense, isTagModal, tagList} = useSelector(selectExpense);
+
+  useEffect(() => {
+    if (isTagModal && expense) {
+      setSelectedTag(expense.tag || '');
+      setAutoTag(false);
+    }
+  }, [isTagModal, expense?.id, expense?.tag]);
 
   if (!expense || !isTagModal) return null;
 
   const onSaveExpense = () => {
-    if (autoTag && selectedTag.length > 0) {
+    if (autoTag && selectedTag) {
       const _vendor = expense.vendor;
       const _tag = expense.tag;
       let tagObj = vendorTagList.find(({vendor, tag}) => vendor === _vendor && tag === _tag);
       if (!tagObj) {
-        tagObj = {id: _vendor, vendor: _vendor, tag: selectedTag[0], date: Date.now()};
+        tagObj = {id: _vendor, vendor: _vendor, tag: selectedTag, date: Date.now()};
         void ExpenseAPI.updateVendorTag(tagObj);
         setTagMap(tagObj);
       }
     }
     const expenseNew = JSONCopy(expense);
-    expenseNew.tag = selectedTag[0];
+    expenseNew.tag = selectedTag;
     void ExpenseAPI.addExpense(expenseNew);
     updateExpense(expenseNew);
     hideTagExpense();
@@ -35,49 +47,72 @@ const TagExpenses: React.FC = () => {
   const vendorNames = formatVendorName(expense.vendor);
 
   return (
-    <Portal>
-      <Dialog visible={isTagModal} onDismiss={hideTagExpense} style={{maxHeight: '80%'}}>
-        <Dialog.ScrollArea>
-          <ScrollView>
-            <View style={styles.summary}>
-              <Text variant="titleMedium" style={{color: theme.colors.onSurface}}>{vendorNames[0]}</Text>
-              {vendorNames[1] && <Text variant="bodySmall" style={{color: theme.colors.outline}}>{vendorNames[1]}</Text>}
-              <Text variant="bodySmall" style={{color: theme.colors.onSurfaceVariant, marginTop: 4}}>{getDateMonthTime(expense.date)}</Text>
-              <Text variant="headlineSmall" style={{color: theme.colors.primary, marginTop: 4}}>₹{expense.cost}</Text>
-              <Text variant="labelSmall" style={{color: expense.tag ? theme.colors.primary : theme.colors.outline}}>
-                {expense.tag || 'untagged'}
-              </Text>
-            </View>
+    <BottomSheetModal
+      visible={isTagModal}
+      onDismiss={hideTagExpense}
+      title={vendorNames[0]}
+      subtitle={getDateMonthTime(expense.date)}
+      secondaryLabel="Close"
+      primaryLabel="Save"
+      onPrimary={onSaveExpense}
+      primaryDisabled={!selectedTag}
+    >
+      <View style={styles.summary}>
+        {vendorNames[1] ? (
+          <Text
+            variant="bodySmall"
+            numberOfLines={2}
+            style={[styles.vendorSecondary, {color: theme.colors.custom.textSecondary}]}
+          >
+            {vendorNames[1]}
+          </Text>
+        ) : null}
+        <Text style={[styles.amount, {color: theme.colors.primary}]}>₹{expense.cost}</Text>
+        <Tag label={expense.tag || 'untagged'} />
+      </View>
 
-            <View style={styles.autoTagRow}>
-              <Text variant="bodyMedium" style={{flex: 1}}>Auto tag future transactions</Text>
-              <Switch value={autoTag} onValueChange={setAutoTag} />
-            </View>
+      <View style={[styles.autoTagRow, {backgroundColor: theme.colors.surfaceVariant}]}>
+        <Text variant="bodyMedium" style={[styles.autoTagLabel, {color: theme.colors.onSurface}]}>
+          Auto tag future transactions
+        </Text>
+        <Switch value={autoTag} onValueChange={setAutoTag} />
+      </View>
 
-            <Text variant="titleSmall" style={[styles.label, {color: theme.colors.onSurface}]}>Select a category</Text>
-            <View style={styles.chipGrid}>
-              {tagList.map((tag, i) => (
-                <Chip key={i} selected={selectedTag.includes(tag)} onPress={() => setSelectedTag([tag])}
-                  style={styles.chip}>{tag}</Chip>
-              ))}
-            </View>
-          </ScrollView>
-        </Dialog.ScrollArea>
-        <Dialog.Actions>
-          <Button onPress={hideTagExpense}>Close</Button>
-          <Button mode="contained" disabled={selectedTag.length === 0} onPress={onSaveExpense}>Save</Button>
-        </Dialog.Actions>
-      </Dialog>
-    </Portal>
+      <Text style={[styles.sectionLabel, {color: theme.colors.custom.textSecondary}]}>Category</Text>
+      <CategoryPicker tags={tagList} selected={selectedTag} onSelect={setSelectedTag} />
+    </BottomSheetModal>
   );
 };
 
 const styles = StyleSheet.create({
-  summary: {alignItems: 'center', paddingVertical: 16, paddingHorizontal: 16},
-  autoTagRow: {flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 8},
-  label: {paddingHorizontal: 16, paddingTop: 12, paddingBottom: 8},
-  chipGrid: {flexDirection: 'row', flexWrap: 'wrap', gap: 8, paddingHorizontal: 16, paddingBottom: 16},
-  chip: {marginBottom: 4},
+  summary: {
+    alignItems: 'center',
+    paddingBottom: spacing.lg,
+    gap: spacing.sm,
+  },
+  vendorSecondary: {
+    textAlign: 'center',
+  },
+  amount: {
+    ...typography.amount,
+    marginTop: spacing.xs,
+  },
+  autoTagRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 12,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+    marginBottom: spacing.xl,
+  },
+  autoTagLabel: {
+    flex: 1,
+    marginRight: spacing.md,
+  },
+  sectionLabel: {
+    ...typography.label,
+    marginBottom: spacing.md,
+  },
 });
 
 export default TagExpenses;
