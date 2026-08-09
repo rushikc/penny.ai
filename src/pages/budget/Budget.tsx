@@ -1,6 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import {View, StyleSheet, ScrollView, Pressable} from 'react-native';
-import {Chip, FAB, Portal, Modal, Text} from 'react-native-paper';
+import {Chip, FAB, Text} from 'react-native-paper';
+import BottomSheetModal from '../../components/ui/BottomSheetModal';
 import {MaterialCommunityIcons} from '@expo/vector-icons';
 import {useSelector} from 'react-redux';
 import dayjs from 'dayjs';
@@ -14,7 +15,7 @@ import {useAppTheme} from '../../theme/useAppTheme';
 import Card from '../../components/ui/Card';
 import Tag from '../../components/ui/Tag';
 import ProgressTrack from '../../components/ui/ProgressTrack';
-import {spacing} from '../../theme/tokens';
+import {spacing, typography} from '../../theme/tokens';
 
 const BudgetPage: React.FC = () => {
   const theme = useAppTheme();
@@ -85,7 +86,7 @@ const BudgetPage: React.FC = () => {
 
   return (
     <SafeAreaView style={[styles.container, {backgroundColor: theme.colors.background}]} edges={['top']}>
-      <Text variant="headlineSmall" style={[styles.header, {color: theme.colors.onSurface}]}>Budget Overview</Text>
+      <Text style={[styles.header, {color: theme.colors.onSurface}]}>Budget Overview</Text>
 
       <ScrollView contentContainerStyle={{paddingBottom: 100}}>
         {budgetProgress.map((progress) => {
@@ -94,7 +95,7 @@ const BudgetPage: React.FC = () => {
             <Pressable key={progress.budget.id} onPress={() => { setSelectedBudget(progress.budget); setEditBudgetOpen(true); }}>
               <Card style={styles.card}>
                 <View style={styles.cardHeader}>
-                  <Text variant="titleMedium" style={{color: theme.colors.onSurface, fontWeight: '700'}}>{progress.budget.name}</Text>
+                  <Text style={[styles.budgetName, {color: theme.colors.onSurface}]}>{progress.budget.name}</Text>
                   <Text style={[styles.amountPill, {color: theme.colors.onSurface, backgroundColor: theme.colors.surfaceVariant}]}>{formatCurrency(progress.budget.amount)}</Text>
                 </View>
                 <View style={styles.progressInfo}>
@@ -104,7 +105,7 @@ const BudgetPage: React.FC = () => {
                   </Text>
                 </View>
                 <ProgressTrack percentage={progress.percentage} />
-                <Text style={{color: getProgressColor(progress.percentage), textAlign: 'right', marginTop: 6, fontWeight: '600', fontSize: 13}}>
+                <Text style={[styles.progressPercent, {color: getProgressColor(progress.percentage)}]}>
                   {progress.percentage.toFixed(1)}%
                 </Text>
                 <View style={styles.tagRow}>
@@ -133,21 +134,24 @@ const BudgetPage: React.FC = () => {
           onPress={() => { setSelectedBudget(null); setEditBudgetOpen(true); }} />
       </View>
 
-      <Portal>
-        <Modal visible={showFilterModal} onDismiss={() => setShowFilterModal(false)} contentContainerStyle={[styles.modal, {backgroundColor: theme.colors.surface}]}>
-          <Text variant="titleMedium" style={{marginBottom: 8}}>Year</Text>
-          <View style={styles.chipGrid}>
-            {years.map(y => <Chip key={y} selected={selectedYear === y} onPress={() => setSelectedYear(y)}>{y.toString()}</Chip>)}
-          </View>
-          <Text variant="titleMedium" style={{marginTop: 16, marginBottom: 8}}>Month</Text>
-          <View style={styles.chipGrid}>
-            {monthOptions.map(o => (
-              <Chip key={o.value} selected={selectedMonth?.value === o.value}
-                onPress={() => { setSelectedMonth(o); setShowFilterModal(false); }}>{o.label}</Chip>
-            ))}
-          </View>
-        </Modal>
-      </Portal>
+      <BottomSheetModal
+        visible={showFilterModal}
+        onDismiss={() => setShowFilterModal(false)}
+        title="Select Month"
+        hideFooter
+      >
+        <Text variant="titleMedium" style={{marginBottom: 8}}>Year</Text>
+        <View style={styles.chipGrid}>
+          {years.map(y => <Chip key={y} selected={selectedYear === y} onPress={() => setSelectedYear(y)}>{y.toString()}</Chip>)}
+        </View>
+        <Text variant="titleMedium" style={{marginTop: 16, marginBottom: 8}}>Month</Text>
+        <View style={styles.chipGrid}>
+          {monthOptions.map(o => (
+            <Chip key={o.value} selected={selectedMonth?.value === o.value}
+              onPress={() => { setSelectedMonth(o); setShowFilterModal(false); }}>{o.label}</Chip>
+          ))}
+        </View>
+      </BottomSheetModal>
 
       <EditBudget open={editBudgetOpen} onClose={() => setEditBudgetOpen(false)} budget={selectedBudget}
         onBudgetUpdated={handleBudgetUpdated} onBudgetDeleted={handleBudgetDeleted} />
@@ -157,17 +161,18 @@ const BudgetPage: React.FC = () => {
 
 const styles = StyleSheet.create({
   container: {flex: 1},
-  header: {fontWeight: '700', marginHorizontal: spacing.lg, marginTop: spacing.sm, marginBottom: spacing.md},
+  header: {...typography.screenTitle, marginHorizontal: spacing.lg, marginTop: spacing.sm, marginBottom: spacing.md},
   card: {marginHorizontal: spacing.md, marginBottom: spacing.md},
   cardHeader: {flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.md},
-  amountPill: {fontSize: 13, fontWeight: '600', overflow: 'hidden', borderRadius: 999, paddingHorizontal: 10, paddingVertical: 4},
+  budgetName: {...typography.cardTitle},
+  amountPill: {...typography.caption, fontWeight: '600', overflow: 'hidden', borderRadius: 999, paddingHorizontal: 10, paddingVertical: 4},
+  progressPercent: {...typography.caption, fontWeight: '600', textAlign: 'right', marginTop: 6},
   progressInfo: {flexDirection: 'row', justifyContent: 'space-between', marginBottom: spacing.sm},
   tagRow: {flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginTop: spacing.md},
   emptyState: {alignItems: 'center', paddingTop: 80},
   floatingBar: {position: 'absolute', left: 0, right: 0, bottom: spacing.lg, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: spacing.lg},
   floatChip: {borderRadius: 999},
   fab: {borderRadius: 32},
-  modal: {margin: 20, padding: 20, borderRadius: 16},
   chipGrid: {flexDirection: 'row', flexWrap: 'wrap', gap: 8},
 });
 

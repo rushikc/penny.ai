@@ -1,7 +1,7 @@
 import React from 'react';
 import {StyleSheet, Text, View, ViewStyle} from 'react-native';
 import {getTagColor} from '../../utility/tagColors';
-import {radius} from '../../theme/tokens';
+import {radius, typography} from '../../theme/tokens';
 
 interface TagProps {
   label: string;
@@ -10,8 +10,7 @@ interface TagProps {
 }
 
 /**
- * Pill-shaped expense tag with a subtle tint of its own deterministic color
- * and slightly bolder text.
+ * Pill-shaped expense tag with neutral gray styling.
  */
 const Tag: React.FC<TagProps> = ({label, style, compact = false}) => {
   const {text, tint} = getTagColor(label);
@@ -37,9 +36,7 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
   },
   text: {
-    fontSize: 12,
-    fontWeight: '600',
-    letterSpacing: 0.2,
+    ...typography.tag,
   },
 });
 

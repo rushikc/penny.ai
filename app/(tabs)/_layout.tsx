@@ -3,6 +3,7 @@ import {Platform, StyleSheet} from 'react-native';
 import {Tabs} from 'expo-router';
 import {MaterialCommunityIcons} from '@expo/vector-icons';
 import {useAppTheme} from '../../src/theme/useAppTheme';
+import {typography} from '../../src/theme/tokens';
 import {useAuth} from '../../src/pages/login/AuthContext';
 import {useSelector} from 'react-redux';
 import {selectExpense} from '../../src/store/expenseActions';
@@ -10,6 +11,8 @@ import {loadInitialAppData} from '../../src/pages/dataValidations';
 import {Redirect} from 'expo-router';
 import {ActivityIndicator, View} from 'react-native';
 import {AUTH_REQUIRED} from '../../src/utility/constants';
+
+const TAB_ICON_SIZE = 22;
 
 export default function TabLayout() {
   const theme = useAppTheme();
@@ -45,28 +48,28 @@ export default function TabLayout() {
           backgroundColor: theme.colors.custom.card,
           borderTopColor: theme.colors.custom.border,
           borderTopWidth: StyleSheet.hairlineWidth,
-          elevation: theme.dark ? 0 : 8,
+          elevation: theme.dark ? 0 : 4,
           shadowColor: theme.colors.custom.shadow,
-          shadowOpacity: theme.dark ? 0 : 0.05,
-          shadowRadius: 10,
-          shadowOffset: {width: 0, height: -2},
-          height: Platform.OS === 'ios' ? 88 : 64,
-          paddingBottom: Platform.OS === 'ios' ? 30 : 10,
-          paddingTop: 8,
+          shadowOpacity: theme.dark ? 0 : 0.04,
+          shadowRadius: 6,
+          shadowOffset: {width: 0, height: -1},
+          height: Platform.OS === 'ios' ? 72 : 58,
+          paddingBottom: Platform.OS === 'ios' ? 22 : 8,
+          paddingTop: 6,
         },
-        tabBarLabelStyle: {
-          fontSize: 11,
-          fontWeight: '600',
-          letterSpacing: 0.2,
-        },
+        tabBarLabelStyle: typography.tabLabel,
       }}
     >
       <Tabs.Screen
         name="home"
         options={{
           title: 'Home',
-          tabBarIcon: ({color, size}) => (
-            <MaterialCommunityIcons name="home-outline" size={size} color={color} />
+          tabBarIcon: ({color, focused}) => (
+            <MaterialCommunityIcons
+              name={focused ? 'home' : 'home-outline'}
+              size={TAB_ICON_SIZE}
+              color={color}
+            />
           ),
         }}
       />
@@ -75,7 +78,7 @@ export default function TabLayout() {
         options={{
           title: 'Insights',
           tabBarIcon: ({color, size}) => (
-            <MaterialCommunityIcons name="chart-line" size={size} color={color} />
+            <MaterialCommunityIcons name="chart-line" size={size ?? TAB_ICON_SIZE} color={color} />
           ),
         }}
       />
@@ -83,8 +86,12 @@ export default function TabLayout() {
         name="budget"
         options={{
           title: 'Budget',
-          tabBarIcon: ({color, size}) => (
-            <MaterialCommunityIcons name="wallet-outline" size={size} color={color} />
+          tabBarIcon: ({color, focused}) => (
+            <MaterialCommunityIcons
+              name={focused ? 'wallet' : 'wallet-outline'}
+              size={TAB_ICON_SIZE}
+              color={color}
+            />
           ),
         }}
       />
@@ -92,8 +99,12 @@ export default function TabLayout() {
         name="profile"
         options={{
           title: 'Profile',
-          tabBarIcon: ({color, size}) => (
-            <MaterialCommunityIcons name="account-circle-outline" size={size} color={color} />
+          tabBarIcon: ({color, focused}) => (
+            <MaterialCommunityIcons
+              name={focused ? 'account-circle' : 'account-circle-outline'}
+              size={TAB_ICON_SIZE}
+              color={color}
+            />
           ),
         }}
       />

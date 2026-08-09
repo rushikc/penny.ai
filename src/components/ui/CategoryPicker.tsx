@@ -1,7 +1,7 @@
 import React from 'react';
 import {Pressable, StyleSheet, Text, View} from 'react-native';
-import {getTagColor} from '../../utility/tagColors';
-import {radius, spacing, typography} from '../../theme/tokens';
+import {neutralTag, radius, spacing, typography} from '../../theme/tokens';
+import {useAppTheme} from '../../theme/useAppTheme';
 
 interface CategoryPickerProps {
   tags: string[];
@@ -10,17 +10,17 @@ interface CategoryPickerProps {
 }
 
 /**
- * Tappable category chips with deterministic tag colors. Selected chips use a
- * solid fill; unselected chips use a soft tint background.
+ * Tappable category chips with neutral styling. Selected chips use the brand
+ * accent; unselected chips use a soft gray tint.
  */
 const CategoryPicker: React.FC<CategoryPickerProps> = ({tags, selected, onSelect}) => {
+  const theme = useAppTheme();
   const selectedTags = Array.isArray(selected) ? selected : selected ? [selected] : [];
 
   return (
     <View style={styles.grid}>
       {tags.map((tag) => {
         const isSelected = selectedTags.includes(tag);
-        const {text, tint} = getTagColor(tag);
 
         return (
           <Pressable
@@ -29,12 +29,18 @@ const CategoryPicker: React.FC<CategoryPickerProps> = ({tags, selected, onSelect
             style={({pressed}) => [
               styles.chip,
               {
-                backgroundColor: isSelected ? text : tint,
+                backgroundColor: isSelected ? theme.colors.primary : neutralTag.tint,
                 opacity: pressed ? 0.85 : 1,
               },
             ]}
           >
-            <Text style={[styles.chipText, {color: isSelected ? '#FFFFFF' : text}]} numberOfLines={1}>
+            <Text
+              style={[
+                styles.chipText,
+                {color: isSelected ? theme.colors.onPrimary : neutralTag.text},
+              ]}
+              numberOfLines={1}
+            >
               {tag}
             </Text>
           </Pressable>
@@ -54,12 +60,11 @@ const styles = StyleSheet.create({
     borderRadius: radius.pill,
     paddingHorizontal: spacing.md + 2,
     paddingVertical: spacing.sm,
-    minHeight: 36,
+    minHeight: 32,
     justifyContent: 'center',
   },
   chipText: {
-    ...typography.rowTitle,
-    fontSize: 14,
+    ...typography.tag,
   },
 });
 

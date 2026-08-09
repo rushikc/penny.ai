@@ -2,9 +2,9 @@ import React from 'react';
 import {View, StyleSheet, Dimensions} from 'react-native';
 import {Text, IconButton} from 'react-native-paper';
 import {LineChart, PieChart} from 'react-native-gifted-charts';
-import {CHART_COLORS} from '../../utility/constants';
-import {useAppTheme} from '../../theme/useAppTheme';
 import Card from '../../components/ui/Card';
+import {useAppTheme} from '../../theme/useAppTheme';
+import {dataPalette, typography} from '../../theme/tokens';
 
 interface LineDataPoint {
   date: string;
@@ -49,7 +49,7 @@ export const LineGraph: React.FC<LineGraphProps> = ({data, lineKeys, title = 'Sp
 
   return (
     <Card style={styles.chartContainer}>
-      <Text variant="titleMedium" style={[styles.chartTitle, {color: theme.colors.onSurface, fontWeight: '700'}]}>{title}</Text>
+      <Text style={[styles.chartTitle, {color: theme.colors.onSurface}]}>{title}</Text>
       <LineChart
         data={lineData}
         width={screenWidth - 80}
@@ -96,7 +96,7 @@ export const PieGraph: React.FC<PieGraphProps> = ({data, title = 'Distribution',
 
   const pieData = data.map((item, index) => ({
     value: item.value,
-    color: CHART_COLORS[index % CHART_COLORS.length],
+    color: dataPalette[index % dataPalette.length],
     text: `₹${Math.round(item.value)}`,
     textColor: theme.colors.onSurface,
     textSize: 10,
@@ -105,7 +105,7 @@ export const PieGraph: React.FC<PieGraphProps> = ({data, title = 'Distribution',
   return (
     <Card style={styles.chartContainer}>
       <View style={styles.chartHeader}>
-        <Text variant="titleMedium" style={{color: theme.colors.onSurface, fontWeight: '700'}}>{title}</Text>
+        <Text style={[styles.chartTitle, {color: theme.colors.onSurface}]}>{title}</Text>
         {onSelectionToggle && <IconButton icon="tune" size={20} onPress={onSelectionToggle} />}
       </View>
       <View style={styles.pieWrapper}>
@@ -123,7 +123,7 @@ export const PieGraph: React.FC<PieGraphProps> = ({data, title = 'Distribution',
       <View style={styles.legend}>
         {data.map((item, index) => (
           <View key={index} style={styles.legendItem}>
-            <View style={[styles.legendDot, {backgroundColor: CHART_COLORS[index % CHART_COLORS.length]}]} />
+            <View style={[styles.legendDot, {backgroundColor: dataPalette[index % dataPalette.length]}]} />
             <Text variant="labelSmall" numberOfLines={1} style={{color: theme.colors.custom.textSecondary, flex: 1}}>
               {item.name.substring(0, 20)}
             </Text>
@@ -136,7 +136,7 @@ export const PieGraph: React.FC<PieGraphProps> = ({data, title = 'Distribution',
 
 const styles = StyleSheet.create({
   chartContainer: {marginHorizontal: 12, marginVertical: 8, overflow: 'hidden'},
-  chartTitle: {marginBottom: 12},
+  chartTitle: {...typography.cardTitle, marginBottom: 12},
   chartHeader: {flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'},
   pieWrapper: {alignItems: 'center', paddingVertical: 16},
   legend: {flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 8},

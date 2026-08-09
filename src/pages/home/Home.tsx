@@ -1,6 +1,7 @@
 import React, {useCallback, useEffect, useState} from 'react';
 import {View, StyleSheet, Pressable, ScrollView} from 'react-native';
-import {Chip, FAB, Text, Portal, Modal, Divider} from 'react-native-paper';
+import {Chip, Divider, FAB, Text} from 'react-native-paper';
+import BottomSheetModal from '../../components/ui/BottomSheetModal';
 import {MaterialCommunityIcons} from '@expo/vector-icons';
 import {useSelector} from 'react-redux';
 import dayjs from 'dayjs';
@@ -32,7 +33,7 @@ import {useAppTheme} from '../../theme/useAppTheme';
 import Card from '../../components/ui/Card';
 import Tag from '../../components/ui/Tag';
 import SearchField from '../../components/ui/SearchField';
-import {spacing} from '../../theme/tokens';
+import {spacing, typography} from '../../theme/tokens';
 
 const Home: React.FC = () => {
   const theme = useAppTheme();
@@ -184,7 +185,7 @@ const Home: React.FC = () => {
           />
         </View>
         <View style={styles.expenseContent}>
-          <Text variant="bodyLarge" numberOfLines={1} style={[styles.vendorName, {color: theme.colors.onSurface}]}>
+          <Text numberOfLines={1} style={[styles.vendorName, {color: theme.colors.onSurface}]}>
             {vendorNames[0]}
           </Text>
           <View style={styles.metaRow}>
@@ -227,7 +228,7 @@ const Home: React.FC = () => {
               <Card key={groupKey} noPadding style={styles.groupCard}>
                 <Pressable style={styles.groupHeader} onPress={() => toggleGroupCollapse(groupKey)}>
                   <View style={{flex: 1}}>
-                    <Text variant="titleMedium" style={{color: theme.colors.onSurface, fontWeight: '700'}}>
+                    <Text style={[styles.groupTitle, {color: theme.colors.onSurface}]}>
                       {selectedGroupBy === 'days' ? groupData.groupLabel : groupData.groupLabel.toLowerCase()}
                     </Text>
                     <Text variant="bodySmall" style={{color: theme.colors.custom.textSecondary}}>
@@ -304,69 +305,72 @@ const Home: React.FC = () => {
         />
       )}
 
-      {/* Date filter: calendar month (budget-style) + relative ranges */}
-      <Portal>
-        <Modal visible={showFilterModal} onDismiss={() => setShowFilterModal(false)} contentContainerStyle={[styles.modal, {backgroundColor: theme.colors.surface}]}>
-          <Text variant="titleMedium" style={{marginBottom: 8, color: theme.colors.onSurface}}>Year</Text>
-          <View style={styles.chipGrid}>
-            {years.map(y => (
-              <Chip key={y} selected={selectedYear === y} onPress={() => setSelectedYear(y)} style={styles.filterChip}>
-                {y.toString()}
-              </Chip>
-            ))}
-          </View>
-          <Text variant="titleMedium" style={{marginTop: 16, marginBottom: 8, color: theme.colors.onSurface}}>Month</Text>
-          <View style={styles.chipGrid}>
-            {monthOptions.map(option => (
-              <Chip
-                key={option.value}
-                selected={dateFilter.mode === 'month' && dateFilter.monthYear.value === option.value}
-                onPress={() => selectMonth(option)}
-                style={styles.filterChip}
-              >
-                {option.label}
-              </Chip>
-            ))}
-          </View>
-          <Divider style={{marginVertical: 16, backgroundColor: theme.colors.custom.border}} />
-          <Text variant="titleMedium" style={{marginBottom: 8, color: theme.colors.onSurface}}>Quick range</Text>
-          <View style={styles.chipGrid}>
-            {relativeFilterOptions.map(option => (
-              <Chip
-                key={option.id}
-                selected={dateFilter.mode === 'relative' && dateFilter.range === option.id}
-                onPress={() => selectRelativeRange(option.id)}
-                style={styles.filterChip}
-              >
-                {option.label}
-              </Chip>
-            ))}
-          </View>
-        </Modal>
-      </Portal>
+      <BottomSheetModal
+        visible={showFilterModal}
+        onDismiss={() => setShowFilterModal(false)}
+        title="Date range"
+        hideFooter
+      >
+        <Text variant="titleMedium" style={{marginBottom: 8, color: theme.colors.onSurface}}>Year</Text>
+        <View style={styles.chipGrid}>
+          {years.map(y => (
+            <Chip key={y} selected={selectedYear === y} onPress={() => setSelectedYear(y)} style={styles.filterChip}>
+              {y.toString()}
+            </Chip>
+          ))}
+        </View>
+        <Text variant="titleMedium" style={{marginTop: 16, marginBottom: 8, color: theme.colors.onSurface}}>Month</Text>
+        <View style={styles.chipGrid}>
+          {monthOptions.map(option => (
+            <Chip
+              key={option.value}
+              selected={dateFilter.mode === 'month' && dateFilter.monthYear.value === option.value}
+              onPress={() => selectMonth(option)}
+              style={styles.filterChip}
+            >
+              {option.label}
+            </Chip>
+          ))}
+        </View>
+        <Divider style={{marginVertical: 16, backgroundColor: theme.colors.custom.border}} />
+        <Text variant="titleMedium" style={{marginBottom: 8, color: theme.colors.onSurface}}>Quick range</Text>
+        <View style={styles.chipGrid}>
+          {relativeFilterOptions.map(option => (
+            <Chip
+              key={option.id}
+              selected={dateFilter.mode === 'relative' && dateFilter.range === option.id}
+              onPress={() => selectRelativeRange(option.id)}
+              style={styles.filterChip}
+            >
+              {option.label}
+            </Chip>
+          ))}
+        </View>
+      </BottomSheetModal>
 
-      {/* GroupBy Modal */}
-      <Portal>
-        <Modal visible={showGroupByModal} onDismiss={() => setShowGroupByModal(false)} contentContainerStyle={[styles.modal, {backgroundColor: theme.colors.surface}]}>
-          <Text variant="titleMedium" style={{marginBottom: 8, color: theme.colors.onSurface}}>Group by</Text>
-          <View style={styles.chipGrid}>
-            {groupByOptions.map(option => (
-              <Chip key={option.id} selected={selectedGroupBy === option.id}
-                onPress={() => { setSelectedGroupBy(option.id); setSelectedSortBy(option.id === 'days' ? 'date' : 'count'); setShowGroupByModal(false); }}
-                style={styles.filterChip}>{option.label}</Chip>
-            ))}
-          </View>
-          <Divider style={{marginVertical: 12}} />
-          <Text variant="titleMedium" style={{marginBottom: 8, color: theme.colors.onSurface}}>Sort by</Text>
-          <View style={styles.chipGrid}>
-            {sortByOptions.map(option => (
-              <Chip key={option.id} selected={selectedSortBy === option.id}
-                onPress={() => { setSelectedSortBy(option.id === selectedSortBy ? null : option.id); setShowGroupByModal(false); }}
-                style={styles.filterChip}>{option.label}</Chip>
-            ))}
-          </View>
-        </Modal>
-      </Portal>
+      <BottomSheetModal
+        visible={showGroupByModal}
+        onDismiss={() => setShowGroupByModal(false)}
+        title="Group by"
+        hideFooter
+      >
+        <View style={styles.chipGrid}>
+          {groupByOptions.map(option => (
+            <Chip key={option.id} selected={selectedGroupBy === option.id}
+              onPress={() => { setSelectedGroupBy(option.id); setSelectedSortBy(option.id === 'days' ? 'date' : 'count'); setShowGroupByModal(false); }}
+              style={styles.filterChip}>{option.label}</Chip>
+          ))}
+        </View>
+        <Divider style={{marginVertical: 12}} />
+        <Text variant="titleMedium" style={{marginBottom: 8, color: theme.colors.onSurface}}>Sort by</Text>
+        <View style={styles.chipGrid}>
+          {sortByOptions.map(option => (
+            <Chip key={option.id} selected={selectedSortBy === option.id}
+              onPress={() => { setSelectedSortBy(option.id === selectedSortBy ? null : option.id); setShowGroupByModal(false); }}
+              style={styles.filterChip}>{option.label}</Chip>
+          ))}
+        </View>
+      </BottomSheetModal>
 
       {isTagModal && <TagExpenses />}
       <MergeExpenses open={showMergeDialog} onClose={() => setShowMergeDialog(false)} expenses={selectedExpenses} onMergeComplete={handleMergeComplete} />
@@ -382,20 +386,20 @@ const styles = StyleSheet.create({
   emptyState: {alignItems: 'center', paddingTop: 80},
   groupCard: {marginHorizontal: spacing.md, marginBottom: spacing.md, overflow: 'hidden'},
   groupHeader: {flexDirection: 'row', alignItems: 'center', paddingHorizontal: spacing.lg, paddingVertical: spacing.md},
-  groupTotal: {fontSize: 16, fontWeight: '700', marginRight: spacing.xs},
+  groupTotal: {...typography.amountRow, marginRight: spacing.xs},
   rowGroup: {},
   expenseRow: {flexDirection: 'row', alignItems: 'center', paddingHorizontal: spacing.lg, paddingVertical: spacing.md},
   avatar: {width: 40, height: 40, borderRadius: 20, justifyContent: 'center', alignItems: 'center', marginRight: spacing.md},
   expenseContent: {flex: 1, marginRight: spacing.sm},
-  vendorName: {fontWeight: '600', marginBottom: 4},
+  vendorName: {...typography.rowTitle, marginBottom: 4},
+  groupTitle: {...typography.cardTitle},
   metaRow: {flexDirection: 'row', alignItems: 'center', gap: spacing.sm},
-  amount: {fontSize: 16, fontWeight: '700'},
+  amount: {...typography.amountRow},
   floatingBar: {position: 'absolute', left: 0, right: 0, bottom: spacing.lg, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingHorizontal: spacing.lg},
   selectionBar: {flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: spacing.sm, borderRadius: 999, paddingVertical: spacing.xs, paddingHorizontal: spacing.sm, flexWrap: 'wrap'},
   chip: {marginVertical: 2},
   fabGroup: {paddingBottom: spacing.sm},
   fab: {borderRadius: 32},
-  modal: {margin: 20, padding: 20, borderRadius: 16},
   chipGrid: {flexDirection: 'row', flexWrap: 'wrap', gap: 8},
   filterChip: {marginBottom: 4},
 });

@@ -1,16 +1,17 @@
-import React from 'react';
+import React, {useMemo} from 'react';
 import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
   StyleSheet,
+  useWindowDimensions,
   View,
   ViewStyle,
 } from 'react-native';
-import {Button, Divider, Modal, Portal, Text} from 'react-native-paper';
+import {Button, Divider, IconButton, Modal, Portal, Text} from 'react-native-paper';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useAppTheme} from '../../theme/useAppTheme';
-import {radius, spacing} from '../../theme/tokens';
+import {popup, radius, spacing, typography} from '../../theme/tokens';
 
 interface BottomSheetModalProps {
   visible: boolean;
@@ -22,13 +23,16 @@ interface BottomSheetModalProps {
   secondaryLabel?: string;
   onPrimary?: () => void;
   primaryDisabled?: boolean;
+  primaryTone?: 'default' | 'danger';
   scrollable?: boolean;
+  hideFooter?: boolean;
+  maxHeightRatio?: number;
   contentStyle?: ViewStyle;
 }
 
 /**
- * iOS-style bottom sheet built on react-native-paper Modal. Avoids the nested
- * card look of Dialog and anchors actions at the bottom with safe-area padding.
+ * Standard iOS-style bottom sheet for all popups. Layout comes from global
+ * `popup` tokens; callers only tune height via `maxHeightRatio`.
  */
 const BottomSheetModal: React.FC<BottomSheetModalProps> = ({
   visible,
@@ -40,79 +44,144 @@ const BottomSheetModal: React.FC<BottomSheetModalProps> = ({
   secondaryLabel = 'Cancel',
   onPrimary,
   primaryDisabled = false,
+  primaryTone = 'default',
   scrollable = true,
+  hideFooter = false,
+  maxHeightRatio = popup.defaultMaxHeightRatio,
   contentStyle,
 }) => {
   const theme = useAppTheme();
   const insets = useSafeAreaInsets();
+  const {height: windowHeight} = useWindowDimensions();
+  const sheetMaxHeight = Math.min(
+    windowHeight * maxHeightRatio,
+    windowHeight - insets.top - spacing.sm - popup.screenInsetBottom,
+  );
+
+  const bodyMaxHeight = useMemo(() => {
+    const handleArea = spacing.sm + popup.handleHeight + spacing.sm;
+    const headerArea = 56 + (subtitle ? 20 : 0) + popup.headerPaddingBottom;
+    const footerArea = hideFooter ? 0 : 56;
+    const dividerArea = hideFooter ? 0 : 1;
+    const bottomPadding = Math.max(insets.bottom, spacing.lg);
+    return Math.max(
+      120,
+      sheetMaxHeight - handleArea - headerArea - footerArea - dividerArea - bottomPadding,
+    );
+  }, [hideFooter, insets.bottom, sheetMaxHeight, subtitle]);
 
   const body = scrollable ? (
     <ScrollView
       showsVerticalScrollIndicator={false}
       keyboardShouldPersistTaps="handled"
       bounces={false}
+      style={{maxHeight: bodyMaxHeight}}
       contentContainerStyle={[styles.scrollContent, contentStyle]}
     >
       {children}
     </ScrollView>
   ) : (
-    <View style={[styles.scrollContent, contentStyle]}>{children}</View>
+    <View style={[styles.scrollContent, contentStyle, {maxHeight: bodyMaxHeight}]}>
+      {children}
+    </View>
   );
+
+  const primaryButtonColor =
+    primaryTone === 'danger' ? theme.colors.error : theme.colors.primary;
 
   return (
     <Portal>
       <Modal visible={visible} onDismiss={onDismiss} contentContainerStyle={styles.backdrop}>
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          style={styles.keyboardAvoid}
+          style={[
+            styles.keyboardAvoid,
+            {
+              paddingHorizontal: popup.screenInsetHorizontal,
+              paddingBottom: popup.screenInsetBottom,
+            },
+          ]}
         >
           <View
             style={[
               styles.sheet,
               {
                 backgroundColor: theme.colors.surface,
+                borderRadius: popup.radius,
+                maxHeight: sheetMaxHeight,
+                maxWidth: popup.maxWidth,
                 paddingBottom: Math.max(insets.bottom, spacing.lg),
               },
             ]}
           >
             <View style={styles.handleWrap}>
-              <View style={[styles.handle, {backgroundColor: theme.colors.custom.border}]} />
+              <View
+                style={[
+                  styles.handle,
+                  {
+                    backgroundColor: theme.colors.custom.border,
+                    width: popup.handleWidth,
+                    height: popup.handleHeight,
+                  },
+                ]}
+              />
             </View>
 
-            <View style={styles.header}>
-              <Text variant="titleLarge" style={[styles.title, {color: theme.colors.onSurface}]}>
-                {title}
-              </Text>
-              {subtitle ? (
-                <Text
-                  variant="bodySmall"
-                  style={{color: theme.colors.custom.textSecondary, marginTop: spacing.xs}}
-                >
-                  {subtitle}
+            <View style={[styles.header, {paddingHorizontal: popup.paddingHorizontal}]}>
+              <View style={styles.headerText}>
+                <Text style={[styles.title, {color: theme.colors.onSurface}]}>
+                  {title}
                 </Text>
-              ) : null}
+                {subtitle ? (
+                  <Text
+                    variant="bodySmall"
+                    style={{color: theme.colors.custom.textSecondary, marginTop: spacing.xs}}
+                  >
+                    {subtitle}
+                  </Text>
+                ) : null}
+              </View>
+              <IconButton
+                icon="close"
+                size={popup.closeIconSize}
+                onPress={onDismiss}
+                iconColor={theme.colors.custom.textSecondary}
+                style={styles.closeBtn}
+              />
             </View>
 
             <View style={styles.body}>{body}</View>
 
-            <Divider style={{backgroundColor: theme.colors.custom.border}} />
-
-            <View style={styles.footer}>
-              <Button mode="text" onPress={onDismiss} textColor={theme.colors.primary}>
-                {secondaryLabel}
-              </Button>
-              {onPrimary ? (
-                <Button
-                  mode="contained"
-                  onPress={onPrimary}
-                  disabled={primaryDisabled}
-                  style={styles.primaryBtn}
-                  contentStyle={styles.primaryBtnContent}
+            {!hideFooter ? (
+              <>
+                <Divider style={{backgroundColor: theme.colors.custom.border}} />
+                <View
+                  style={[
+                    styles.footer,
+                    {
+                      paddingHorizontal: popup.footerPaddingHorizontal,
+                      gap: popup.gap,
+                    },
+                  ]}
                 >
-                  {primaryLabel}
-                </Button>
-              ) : null}
-            </View>
+                  <Button mode="text" onPress={onDismiss} textColor={theme.colors.primary}>
+                    {secondaryLabel}
+                  </Button>
+                  {onPrimary ? (
+                    <Button
+                      mode="contained"
+                      onPress={onPrimary}
+                      disabled={primaryDisabled}
+                      buttonColor={primaryButtonColor}
+                      style={styles.primaryBtn}
+                      contentStyle={styles.primaryBtnContent}
+                    >
+                      {primaryLabel}
+                    </Button>
+                  ) : null}
+                </View>
+              </>
+            ) : null}
           </View>
         </KeyboardAvoidingView>
       </Modal>
@@ -127,11 +196,10 @@ const styles = StyleSheet.create({
   },
   keyboardAvoid: {
     width: '100%',
+    alignItems: 'center',
   },
   sheet: {
-    borderTopLeftRadius: radius.card + 4,
-    borderTopRightRadius: radius.card + 4,
-    maxHeight: '92%',
+    width: '100%',
     paddingTop: spacing.sm,
   },
   handleWrap: {
@@ -139,35 +207,41 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.sm,
   },
   handle: {
-    width: 36,
-    height: 5,
     borderRadius: radius.pill,
   },
   header: {
-    paddingHorizontal: spacing.xl,
-    paddingBottom: spacing.md,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    paddingBottom: popup.headerPaddingBottom,
+  },
+  headerText: {
+    flex: 1,
+    paddingRight: spacing.xs,
+  },
+  closeBtn: {
+    margin: 0,
+    marginTop: -spacing.xs,
   },
   title: {
-    fontWeight: '700',
+    ...typography.cardTitle,
   },
   body: {
-    maxHeight: 420,
+    flexShrink: 1,
   },
   scrollContent: {
-    paddingHorizontal: spacing.xl,
+    paddingHorizontal: popup.paddingHorizontal,
     paddingBottom: spacing.lg,
   },
   footer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-end',
-    gap: spacing.sm,
-    paddingHorizontal: spacing.lg,
     paddingTop: spacing.sm,
   },
   primaryBtn: {
     borderRadius: radius.md,
-    minWidth: 96,
+    minWidth: popup.primaryMinWidth,
   },
   primaryBtnContent: {
     paddingHorizontal: spacing.lg,

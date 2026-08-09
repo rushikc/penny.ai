@@ -1,23 +1,16 @@
 export const EXPENSE_LAST_UPDATE = 'expenseLastUpdate';
 export const TAG_LAST_UPDATE = 'tagLastUpdate';
 export const BUDGET_LAST_UPDATE = 'budgetLastUpdate';
+export const FX_USD_INR_RATE = 'fxUsdInrRate';
+export const FX_RATE_LAST_UPDATE = 'fxRateLastUpdate';
+
+export const FX_CACHE_TTL_MS = 10 * 60 * 1000;
+export const DEFAULT_USD_TO_INR = 95.18;
 
 /** When false, app auto-signs in via .env admin credentials; login screen stays optional. */
 export const AUTH_REQUIRED = false;
 
-export const CHART_COLORS = [
-  '#FF6B6B',
-  '#96CEB4',
-  '#FFEAA7',
-  '#DDA0DD',
-  '#98D8C8',
-  '#F7DC6F',
-  '#BB8FCE',
-  '#85C1E9',
-  '#F8C471',
-  '#82E0AA',
-  '#F1948A',
-  '#AED6F1',
-  '#A9DFBF',
-  '#4ECDC4',
-];
+import {dataPalette} from '../theme/tokens';
+
+/** @deprecated Use dataPalette from theme/tokens directly. Kept for chart imports. */
+export const CHART_COLORS = [...dataPalette];

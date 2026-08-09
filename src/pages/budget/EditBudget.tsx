@@ -1,11 +1,13 @@
 import React, {useEffect, useState} from 'react';
-import {View, StyleSheet, ScrollView} from 'react-native';
-import {Button, Chip, Dialog, Portal, Text, TextInput, useTheme} from 'react-native-paper';
+import {View, StyleSheet} from 'react-native';
+import {Button, Chip, Text, TextInput} from 'react-native-paper';
 import {useSelector} from 'react-redux';
 import {ExpenseAPI} from '../../api/ExpenseAPI';
+import BottomSheetModal from '../../components/ui/BottomSheetModal';
 import {addBudget, deleteBudget, selectExpense, updateBudget} from '../../store/expenseActions';
 import {Budget} from '../../Types';
 import {createTimedAlert} from '../../store/alertActions';
+import {useAppTheme} from '../../theme/useAppTheme';
 
 interface EditBudgetProps {
   open: boolean;
@@ -16,6 +18,7 @@ interface EditBudgetProps {
 }
 
 const EditBudget: React.FC<EditBudgetProps> = ({open, budget, onClose, onBudgetUpdated, onBudgetDeleted}) => {
+  const theme = useAppTheme();
   const [budgetName, setBudgetName] = useState('');
   const [amount, setAmount] = useState('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
@@ -75,41 +78,44 @@ const EditBudget: React.FC<EditBudgetProps> = ({open, budget, onClose, onBudgetU
   const isFormValid = () => budgetName.trim() !== '' && !isNaN(parseFloat(amount)) && parseFloat(amount) > 0 && selectedTags.length > 0;
 
   return (
-    <Portal>
-      <Dialog visible={open} onDismiss={onClose}>
-        <Dialog.Title>{isAddMode ? 'Add Budget' : 'Edit Budget'}</Dialog.Title>
-        <Dialog.ScrollArea>
-          <ScrollView>
-            <View style={styles.content}>
-              <TextInput label="Budget Name" value={budgetName} onChangeText={setBudgetName} mode="outlined" style={styles.input} />
-              <TextInput label="Amount" value={amount} onChangeText={setAmount} keyboardType="numeric" mode="outlined"
-                left={<TextInput.Affix text="₹" />} style={styles.input} />
-              <Text variant="titleSmall" style={styles.label}>Select tags</Text>
-              <View style={styles.chipGrid}>
-                {tagList.map(tag => (
-                  <Chip key={tag} selected={selectedTags.includes(tag)} onPress={() => handleTagToggle(tag)}>{tag}</Chip>
-                ))}
-              </View>
-            </View>
-          </ScrollView>
-        </Dialog.ScrollArea>
-        <Dialog.Actions>
-          {!isAddMode && <Button textColor="red" onPress={onDeleteBudget}>Delete</Button>}
-          <Button onPress={onClose}>Cancel</Button>
-          <Button mode="contained" disabled={!isFormValid()} onPress={onSaveBudget}>
-            {isAddMode ? 'Create' : 'Save'}
-          </Button>
-        </Dialog.Actions>
-      </Dialog>
-    </Portal>
+    <BottomSheetModal
+      visible={open}
+      onDismiss={onClose}
+      title={isAddMode ? 'Add Budget' : 'Edit Budget'}
+      primaryLabel={isAddMode ? 'Create' : 'Save'}
+      onPrimary={onSaveBudget}
+      primaryDisabled={!isFormValid()}
+      contentStyle={styles.content}
+    >
+      <TextInput label="Budget Name" value={budgetName} onChangeText={setBudgetName} mode="outlined" style={styles.input} />
+      <TextInput label="Amount" value={amount} onChangeText={setAmount} keyboardType="numeric" mode="outlined"
+        left={<TextInput.Affix text="₹" />} style={styles.input} />
+      <Text variant="titleSmall" style={styles.label}>Select tags</Text>
+      <View style={styles.chipGrid}>
+        {tagList.map(tag => (
+          <Chip key={tag} selected={selectedTags.includes(tag)} onPress={() => handleTagToggle(tag)}>{tag}</Chip>
+        ))}
+      </View>
+      {!isAddMode ? (
+        <Button
+          mode="text"
+          textColor={theme.colors.error}
+          onPress={onDeleteBudget}
+          style={styles.deleteBtn}
+        >
+          Delete Budget
+        </Button>
+      ) : null}
+    </BottomSheetModal>
   );
 };
 
 const styles = StyleSheet.create({
-  content: {paddingHorizontal: 16, paddingVertical: 8},
+  content: {paddingBottom: 8},
   input: {marginBottom: 12},
   label: {marginTop: 8, marginBottom: 8},
-  chipGrid: {flexDirection: 'row', flexWrap: 'wrap', gap: 8, paddingBottom: 16},
+  chipGrid: {flexDirection: 'row', flexWrap: 'wrap', gap: 8, paddingBottom: 8},
+  deleteBtn: {alignSelf: 'flex-start', marginTop: 8},
 });
 
 export default EditBudget;
