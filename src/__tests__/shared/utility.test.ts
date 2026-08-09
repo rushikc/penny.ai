@@ -1,10 +1,12 @@
 import {
   formatVendorName,
   generateUUID,
+  getDateJsIdFormat,
   getDateMonth,
   getUnixTimestamp,
   isEmpty,
   JSONCopy,
+  sortBy2Key,
   sortByKey,
 } from '../../utility/utility';
 import {getTagColor} from '../../utility/tagColors';
@@ -23,6 +25,10 @@ describe('utility helpers', () => {
     expect(formatVendorName('Alice alice@upi')).toEqual(['alice', 'alice@upi']);
     expect(formatVendorName('foo manual entry bar')).toEqual(['manual entry']);
     expect(formatVendorName('Swiggy')).toEqual(['swiggy']);
+    expect(formatVendorName('X manual entry X upi@bank')).toEqual(['manual entry', 'upi@bank']);
+    expect(formatVendorName('John Doe john@oksbi')).toEqual(['john doe', 'john@oksbi']);
+    // whitespace-only name side fails isEmpty and falls back to the full vendor string
+    expect(formatVendorName('   upi@bank')).toEqual(['   upi@bank']);
   });
 
   it('sorts by numeric key descending', () => {
@@ -37,6 +43,19 @@ describe('utility helpers', () => {
     expect(sorted.map(x => x.id)).toEqual(['b', 'c', 'a']);
   });
 
+  it('sorts by nested numeric key descending', () => {
+    const sorted = sortBy2Key(
+      [
+        {id: 'a', meta: {score: 1}},
+        {id: 'b', meta: {score: 3}},
+        {id: 'c', meta: {score: 2}},
+      ],
+      'meta',
+      'score',
+    );
+    expect(sorted.map(x => x.id)).toEqual(['b', 'c', 'a']);
+  });
+
   it('deep copies via JSONCopy', () => {
     const src = {a: 1, nested: {b: 2}};
     const copy = JSONCopy(src);
@@ -47,6 +66,7 @@ describe('utility helpers', () => {
   it('formats dates and unix timestamps', () => {
     expect(getDateMonth(ms(2026, 6, 8))).toMatch(/08 Jun/);
     expect(getUnixTimestamp('2020-01-01')).toBeGreaterThan(0);
+    expect(getDateJsIdFormat(new Date(2026, 5, 8, 15, 30))).toMatch(/08 Jun 26/);
   });
 
   it('generates uuid-like strings', () => {

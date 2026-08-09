@@ -70,6 +70,16 @@ describe('merge expense utils', () => {
     expect(merged.cost).toBe(40);
   });
 
+  it('treats a net-zero merge as credit', () => {
+    const balanced = [
+      makeExpense({id: '1', mailId: '1', vendor: 'A', cost: 25, costType: 'debit'}),
+      makeExpense({id: '2', mailId: '2', vendor: 'B', cost: 25, costType: 'credit'}),
+    ];
+    const merged = buildMergedExpense(balanced, 'A', 'Wash');
+    expect(merged.cost).toBe(0);
+    expect(merged.costType).toBe('credit');
+  });
+
   it('lists unique vendors', () => {
     expect(uniqueVendorsFromExpenses(expenses)).toEqual(['Swiggy', 'Zomato']);
   });
@@ -99,6 +109,26 @@ describe('home expense redux reducers', () => {
       actions.updateExpense(makeExpense({mailId: 'm2', tag: 'Bills'})),
     );
     expect(inserted.expenseList).toHaveLength(2);
+  });
+
+  it('only updates tag on matching mailId and leaves cost/vendor unchanged', () => {
+    const seeded = reducer(
+      base,
+      actions.setExpenseList([
+        makeExpense({mailId: 'm1', tag: 'Food', cost: 50, vendor: 'Swiggy'}),
+      ]),
+    );
+    const next = reducer(
+      seeded,
+      actions.updateExpense(
+        makeExpense({mailId: 'm1', tag: 'Travel', cost: 999, vendor: 'Changed'}),
+      ),
+    );
+    expect(next.expenseList[0]).toMatchObject({
+      tag: 'Travel',
+      cost: 50,
+      vendor: 'Swiggy',
+    });
   });
 
   it('deletes expense by mailId', () => {

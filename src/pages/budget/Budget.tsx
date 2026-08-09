@@ -16,6 +16,7 @@ import Tag from '../../components/ui/Tag';
 import ProgressTrack from '../../components/ui/ProgressTrack';
 import {spacing, typography} from '../../theme/tokens';
 import {calculateBudgetProgress, filterExpensesByMonth} from './budgetCalculations';
+import {getProgressTone} from './budgetProgressStyle';
 
 const BudgetPage: React.FC = () => {
   const theme = useAppTheme();
@@ -43,7 +44,12 @@ const BudgetPage: React.FC = () => {
     setLoading(false);
   }, [expenseList, budgetList, selectedMonth]);
 
-  const getProgressColor = (pct: number) => pct < 85 ? theme.colors.primary : pct < 100 ? theme.colors.custom.warning : theme.colors.custom.danger;
+  const getProgressColor = (pct: number) => {
+    const tone = getProgressTone(pct);
+    if (tone === 'danger') return theme.colors.custom.danger;
+    if (tone === 'warning') return theme.colors.custom.warning;
+    return theme.colors.primary;
+  };
 
   const formatCurrency = (amount: number) => new Intl.NumberFormat('en-IN', {style: 'currency', currency: 'INR', minimumFractionDigits: 0, maximumFractionDigits: 0}).format(amount);
 

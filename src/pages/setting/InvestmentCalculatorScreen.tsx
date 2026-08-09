@@ -17,6 +17,7 @@ import {
 import {FxRate, getUsdToInrRate} from '../../utility/exchangeRate';
 import {createTimedAlert} from '../../store/alertActions';
 import EditInvestmentAsset from './EditInvestmentAsset';
+import {buildSavedInvestmentAsset} from './investmentAssetSave';
 
 const formatInr = (amount: number) =>
   new Intl.NumberFormat('en-IN', {
@@ -284,25 +285,7 @@ const InvestmentCalculatorScreen: React.FC = () => {
   };
 
   const handleSaveAsset = async (asset: InvestmentAsset) => {
-    const existing = assets.find(item => item.id === asset.id);
-    const isExisting = Boolean(existing);
-
-    const valueChanged = existing ? existing.currentValue !== asset.currentValue : true;
-    const sipChanged = existing
-      ? existing.monthlyContribution !== asset.monthlyContribution
-      : true;
-
-    const savedAsset: InvestmentAsset = {
-      ...asset,
-      asOfDate:
-        !isExisting || valueChanged || sipChanged
-          ? Date.now()
-          : existing?.asOfDate,
-    };
-
-    const nextAssets = isExisting
-      ? assets.map(item => (item.id === savedAsset.id ? savedAsset : item))
-      : [...assets, savedAsset];
+    const {nextAssets, isExisting} = buildSavedInvestmentAsset(asset, assets);
 
     setAssets(nextAssets);
     const success = await ExpenseAPI.updateInvestmentConfig({
