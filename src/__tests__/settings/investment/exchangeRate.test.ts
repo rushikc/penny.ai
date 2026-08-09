@@ -1,13 +1,13 @@
-import {FinanceStorage} from '../../api/FinanceStorage';
+import {FinanceStorage} from '../../../api/FinanceStorage';
 import {
   DEFAULT_USD_TO_INR,
   FX_CACHE_TTL_MS,
   FX_RATE_LAST_UPDATE,
   FX_USD_INR_RATE,
-} from '../constants';
-import {getUsdToInrRate} from '../exchangeRate';
+} from '../../../utility/constants';
+import {getUsdToInrRate} from '../../../utility/exchangeRate';
 
-jest.mock('../../api/FinanceStorage');
+jest.mock('../../../api/FinanceStorage');
 
 const mockedGetData = FinanceStorage.getData as jest.Mock;
 const mockedAddConfig = FinanceStorage.addConfig as jest.Mock;

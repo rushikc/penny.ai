@@ -14,8 +14,13 @@ import {useAppTheme} from '../../theme/useAppTheme';
 import GradientCard from '../../components/ui/GradientCard';
 import Card from '../../components/ui/Card';
 import {spacing, typography} from '../../theme/tokens';
-
-interface LineDataPoint { date: string; [key: string]: string | number; }
+import {
+  buildInsightsChartData,
+  getDailySpending,
+  getMonthlySpending,
+  getTotalSpending,
+  LineDataPoint,
+} from './insightsCalculations';
 
 const Insights: React.FC = () => {
   const theme = useAppTheme();
@@ -39,77 +44,13 @@ const Insights: React.FC = () => {
 
   const getFilteredExpenses = useCallback(() => filterExpensesByDate(expenses, timeRange), [expenses, timeRange]);
 
-  const getTotalSpending = () => getFilteredExpenses().reduce((sum, e) => sum + e.cost, 0).toFixed(0);
-
-  const aggregate = (vals: number[]) => {
-    if (vals.length === 0) return 0;
-    if (selectedCalculation === 'average') return vals.reduce((s, v) => s + v, 0) / vals.length;
-    const sorted = [...vals].sort((a, b) => a - b);
-    const mid = Math.floor(sorted.length / 2);
-    return sorted.length % 2 !== 0 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
-  };
-
-  const getAverageDailySpending = () => {
-    const filtered = getFilteredExpenses();
-    if (filtered.length === 0) return '0';
-    const byDay = new Map<string, number>();
-    filtered.forEach(e => {
-      const k = new Date(e.date).toLocaleDateString();
-      byDay.set(k, (byDay.get(k) || 0) + e.cost);
-    });
-    return aggregate(Array.from(byDay.values())).toFixed(0);
-  };
-
-  const getMonthlySpending = () => {
-    const filtered = getFilteredExpenses();
-    if (filtered.length === 0) return '0';
-    const byMonth = new Map<string, number>();
-    filtered.forEach(e => {
-      const d = new Date(e.date);
-      const k = `${d.getFullYear()}-${d.getMonth()}`;
-      byMonth.set(k, (byMonth.get(k) || 0) + e.cost);
-    });
-    return aggregate(Array.from(byMonth.values())).toFixed(0);
-  };
-
-  const getCostRange = useCallback((cost: number) => {
-    if (cost <= 100) return '₹0-₹100';
-    if (cost <= 500) return '₹100-₹500';
-    if (cost <= 1000) return '₹500-₹1000';
-    return '₹1000+';
-  }, []);
-
   useEffect(() => {
     const filtered = getFilteredExpenses();
-    if (filtered.length === 0) { setLineChartData([]); setPieChartData([]); setLineKeys([]); return; }
-
-    const byDate = new Map<string, Expense[]>();
-    filtered.forEach(e => {
-      const d = new Date(e.date).toLocaleDateString('en-US', {month: 'short', day: 'numeric'});
-      if (!byDate.has(d)) byDate.set(d, []);
-      byDate.get(d)!.push(e);
-    });
-
-    if (selectedGroupBy === 'days') {
-      const data: LineDataPoint[] = Array.from(byDate.entries()).map(([date, exps]) => ({
-        date, 'Daily Total': exps.reduce((s, e) => s + e.cost, 0),
-      }));
-      data.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-      setLineChartData(data);
-      setLineKeys(['Daily Total']);
-      setPieChartData([]);
-    } else {
-      const getKey = (e: Expense) => selectedGroupBy === 'vendor' ? e.vendor : selectedGroupBy === 'tags' ? (e.tag || 'Untagged') : getCostRange(e.cost);
-      const metrics = new Map<string, number>();
-      filtered.forEach(e => { const k = getKey(e); metrics.set(k, (metrics.get(k) || 0) + e.cost); });
-      let groups = Array.from(metrics.entries()).sort((a, b) => b[1] - a[1]);
-      if (selectedGroupBy === 'tags') groups = groups.filter(([k]) => k !== 'Untagged');
-      const top5 = groups.slice(0, 5);
-      setPieChartData(top5.map(([name, value]) => ({name, value})));
-      setLineChartData([]);
-      setLineKeys([]);
-    }
-  }, [expenses, timeRange, selectedGroupBy, selectedCalculation, getFilteredExpenses, getCostRange]);
+    const chartData = buildInsightsChartData(filtered, selectedGroupBy);
+    setLineChartData(chartData.lineChartData);
+    setLineKeys(chartData.lineKeys);
+    setPieChartData(chartData.pieChartData);
+  }, [expenses, timeRange, selectedGroupBy, selectedCalculation, getFilteredExpenses]);
 
   if (isLoading) return <Loading />;
 
@@ -120,7 +61,7 @@ const Insights: React.FC = () => {
 
         <GradientCard style={styles.card}>
           <Text style={styles.heroLabel}>TOTAL SPENDING</Text>
-          <Text style={styles.heroValue}>₹{getTotalSpending()}</Text>
+          <Text style={styles.heroValue}>₹{getTotalSpending(getFilteredExpenses())}</Text>
           <View style={styles.metricFooter}>
             <MaterialCommunityIcons name="trending-up" size={14} color="rgba(255,255,255,0.85)" />
             <Text style={styles.heroSub}>{filterOptions.find(o => o.id === timeRange)?.label}</Text>
@@ -132,14 +73,18 @@ const Insights: React.FC = () => {
             <Text style={[styles.metricLabel, {color: theme.colors.custom.textSecondary}]}>
               DAILY {selectedCalculation === 'average' ? 'AVG' : 'MEDIAN'}
             </Text>
-            <Text style={[styles.metricValue, {color: theme.colors.primary}]}>₹{getAverageDailySpending()}</Text>
+            <Text style={[styles.metricValue, {color: theme.colors.primary}]}>
+              ₹{getDailySpending(getFilteredExpenses(), selectedCalculation)}
+            </Text>
             <Text style={[styles.metricSub, {color: theme.colors.custom.textSecondary}]}>Per Day</Text>
           </Card>
           <Card style={styles.smallCard}>
             <Text style={[styles.metricLabel, {color: theme.colors.custom.textSecondary}]}>
               MONTHLY {selectedCalculation === 'average' ? 'AVG' : 'MEDIAN'}
             </Text>
-            <Text style={[styles.metricValue, {color: theme.colors.primary}]}>₹{getMonthlySpending()}</Text>
+            <Text style={[styles.metricValue, {color: theme.colors.primary}]}>
+              ₹{getMonthlySpending(getFilteredExpenses(), selectedCalculation)}
+            </Text>
             <Text style={[styles.metricSub, {color: theme.colors.custom.textSecondary}]}>Per Month</Text>
           </Card>
         </View>

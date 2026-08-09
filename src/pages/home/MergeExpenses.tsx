@@ -10,6 +10,11 @@ import {formatVendorName} from '../../utility/utility';
 import {createTimedAlert} from '../../store/alertActions';
 import {useAppTheme} from '../../theme/useAppTheme';
 import {typography} from '../../theme/tokens';
+import {
+  buildMergedExpense,
+  calculateMergeTotal,
+  uniqueVendorsFromExpenses,
+} from './mergeExpenseUtils';
 
 interface MergeExpensesProps {
   expenses: Expense[];
@@ -27,8 +32,7 @@ const MergeExpenses: React.FC<MergeExpensesProps> = ({expenses, open, onClose, o
 
   useEffect(() => {
     if (open && expenses.length > 0) {
-      const total = expenses.reduce((sum, exp) => sum + (exp.costType === 'debit' ? -exp.cost : exp.cost), 0);
-      setTotalCost(total);
+      setTotalCost(calculateMergeTotal(expenses));
       setSelectedVendor('');
       setSelectedTag('');
     }
@@ -39,13 +43,7 @@ const MergeExpenses: React.FC<MergeExpensesProps> = ({expenses, open, onClose, o
       createTimedAlert({type: 'error', message: 'Please select a vendor first'});
       return;
     }
-    const vendorExpense = expenses.find(exp => exp.vendor === selectedVendor) || expenses[0];
-    const mergedExpense: Expense = {
-      id: vendorExpense.id, vendor: selectedVendor, tag: selectedTag || vendorExpense.tag,
-      cost: Math.abs(totalCost), date: vendorExpense.date, modifiedDate: Date.now(),
-      costType: totalCost < 0 ? 'debit' : 'credit', mailId: vendorExpense.mailId,
-      user: vendorExpense.user, type: vendorExpense.type, operation: 'merged',
-    };
+    const mergedExpense = buildMergedExpense(expenses, selectedVendor, selectedTag);
 
     const promiseList = expenses.map(exp => ExpenseAPI.addExpense(exp, 'delete'));
     await Promise.all(promiseList);
@@ -54,7 +52,7 @@ const MergeExpenses: React.FC<MergeExpensesProps> = ({expenses, open, onClose, o
     else onClose();
   };
 
-  const uniqueVendors = Array.from(new Set(expenses.map(exp => exp.vendor)));
+  const uniqueVendors = uniqueVendorsFromExpenses(expenses);
 
   return (
     <BottomSheetModal

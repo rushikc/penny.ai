@@ -6,16 +6,16 @@ import {MaterialCommunityIcons} from '@expo/vector-icons';
 import {useSelector} from 'react-redux';
 import dayjs from 'dayjs';
 import {selectExpense} from '../../store/expenseActions';
-import {Budget, BudgetProgress, Expense, MonthYear} from '../../Types';
+import {Budget, BudgetProgress, MonthYear} from '../../Types';
 import Loading from '../../components/Loading';
 import EditBudget from './EditBudget';
-import {isEmpty} from '../../utility/utility';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {useAppTheme} from '../../theme/useAppTheme';
 import Card from '../../components/ui/Card';
 import Tag from '../../components/ui/Tag';
 import ProgressTrack from '../../components/ui/ProgressTrack';
 import {spacing, typography} from '../../theme/tokens';
+import {calculateBudgetProgress, filterExpensesByMonth} from './budgetCalculations';
 
 const BudgetPage: React.FC = () => {
   const theme = useAppTheme();
@@ -29,27 +29,6 @@ const BudgetPage: React.FC = () => {
   const [selectedYear, setSelectedYear] = useState(dayjs().year());
 
   const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-
-  const filterExpensesByMonth = (expenses: Expense[], monthYear: MonthYear): Expense[] => {
-    return expenses.filter(expense => {
-      const d = dayjs(new Date(expense.date));
-      return d.year() === monthYear.year && d.month() === monthYear.month;
-    });
-  };
-
-  const calculateBudgetProgress = (expenses: Expense[], budgets: Budget[]): BudgetProgress[] => {
-    return budgets.map(budget => {
-      let spent: number;
-      if (budget.tagList.includes('All')) {
-        spent = expenses.filter(e => e.costType === 'debit').reduce((s, e) => s + e.cost, 0);
-      } else {
-        spent = expenses.filter(e => !isEmpty(e.tag)).filter(e => e.costType === 'debit')
-          .filter(e => budget.tagList.some(tag => e.tag?.toLowerCase() === tag.toLowerCase()))
-          .reduce((s, e) => s + e.cost, 0);
-      }
-      return {budget, spent, remaining: Math.max(0, budget.amount - spent), percentage: (spent / budget.amount) * 100};
-    });
-  };
 
   useEffect(() => {
     const now = dayjs();
