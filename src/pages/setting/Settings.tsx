@@ -15,6 +15,7 @@ import {AUTH_REQUIRED} from '../../utility/constants';
 import {useAppTheme} from '../../theme/useAppTheme';
 import Card from '../../components/ui/Card';
 import {spacing, typography} from '../../theme/tokens';
+import {SETTINGS_TILE_ROUTES} from './settingsRoutes';
 
 const Settings: React.FC = () => {
   const router = useRouter();
@@ -46,13 +47,13 @@ const Settings: React.FC = () => {
   };
 
   const dashboardTiles = [
-    {id: 'tags', title: 'Tags', subtitle: 'Manage your expense tags', icon: 'tag', route: '/setting-tags'},
-    {id: 'theme', title: `${appConfig.darkMode ? 'Light' : 'Dark'} Theme`, subtitle: `Switch to ${appConfig.darkMode ? 'light' : 'dark'} mode`, icon: 'theme-light-dark', route: '/toggle-theme'},
-    {id: 'reload', title: 'Reload Data', subtitle: 'Reload your expense data', icon: 'refresh', route: '/reload-expense'},
-    {id: 'investment', title: 'Investment', subtitle: 'Project your investment growth', icon: 'finance', route: '/investment-calculator'},
-    {id: 'manage-tag-maps', title: 'Manage Vendor Tags', subtitle: 'Configure vendor tag mappings', icon: 'map-marker', route: '/setting-tag-maps'},
-    {id: 'auto-tag', title: 'Auto-tag Expenses', subtitle: 'Automatically tag past expenses', icon: 'auto-fix', route: '/auto-tag-expenses'},
-    {id: 'sign-out', title: 'Sign Out', subtitle: 'Log out of your account', icon: 'logout', color: theme.colors.error, route: '/signout'},
+    {id: 'tags', title: 'Tags', subtitle: 'Manage your expense tags', icon: 'tag', route: SETTINGS_TILE_ROUTES[0]},
+    {id: 'theme', title: `${appConfig.darkMode ? 'Light' : 'Dark'} Theme`, subtitle: `Switch to ${appConfig.darkMode ? 'light' : 'dark'} mode`, icon: 'theme-light-dark', route: SETTINGS_TILE_ROUTES[1]},
+    {id: 'reload', title: 'Reload Data', subtitle: 'Reload your expense data', icon: 'refresh', route: SETTINGS_TILE_ROUTES[2]},
+    {id: 'investment', title: 'Investment', subtitle: 'Project your investment growth', icon: 'finance', route: SETTINGS_TILE_ROUTES[3]},
+    {id: 'manage-tag-maps', title: 'Manage Vendor Tags', subtitle: 'Configure vendor tag mappings', icon: 'map-marker', route: SETTINGS_TILE_ROUTES[4]},
+    {id: 'auto-tag', title: 'Auto-tag Expenses', subtitle: 'Automatically tag past expenses', icon: 'auto-fix', route: SETTINGS_TILE_ROUTES[5]},
+    {id: 'sign-out', title: 'Sign Out', subtitle: 'Log out of your account', icon: 'logout', color: theme.colors.error, route: SETTINGS_TILE_ROUTES[6]},
   ];
 
   const handleTileClick = (route: string) => {

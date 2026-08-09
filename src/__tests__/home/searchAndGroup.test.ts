@@ -131,3 +131,23 @@ describe('sort grouped expense keys', () => {
     expect(keys[0]).toBe('b');
   });
 });
+
+describe('days group date-key sorting', () => {
+  it('sorts YYYY-MM-DD keys descending when sortBy is null or date', () => {
+    const grouped = groupExpenses(
+      [
+        makeExpense({id: 'a', mailId: 'a', date: ms(2026, 6, 1)}),
+        makeExpense({id: 'b', mailId: 'b', date: ms(2026, 6, 3)}),
+        makeExpense({id: 'c', mailId: 'c', date: ms(2026, 6, 2)}),
+      ],
+      'days',
+    );
+
+    const sortDays = () =>
+      Object.entries(grouped)
+        .sort(([keyA], [keyB]) => keyB.localeCompare(keyA))
+        .map(([key]) => key);
+
+    expect(sortDays()).toEqual(['2026-06-03', '2026-06-02', '2026-06-01']);
+  });
+});

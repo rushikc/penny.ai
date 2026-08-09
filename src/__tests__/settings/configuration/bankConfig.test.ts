@@ -15,6 +15,32 @@ jest.mock('../../../api/FinanceStorage', () => ({
 }));
 
 import {ExpenseAPI} from '../../../api/ExpenseAPI';
+import {validateCreditCardDigits} from '../../../pages/setting/bankCardValidation';
+
+describe('validateCreditCardDigits', () => {
+  it('requires exactly 4 digits', () => {
+    expect(validateCreditCardDigits('', [])).toEqual({
+      ok: false,
+      error: 'Enter exactly 4 digits',
+    });
+    expect(validateCreditCardDigits('12', [])).toEqual({
+      ok: false,
+      error: 'Enter exactly 4 digits',
+    });
+    expect(validateCreditCardDigits('abcd', [])).toEqual({
+      ok: false,
+      error: 'Enter exactly 4 digits',
+    });
+  });
+
+  it('rejects duplicates and accepts new cards', () => {
+    expect(validateCreditCardDigits('1234', ['1234'])).toEqual({
+      ok: false,
+      error: 'Card already added',
+    });
+    expect(validateCreditCardDigits('5678', ['1234'])).toEqual({ok: true});
+  });
+});
 
 describe('bank configuration', () => {
   beforeEach(() => {

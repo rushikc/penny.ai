@@ -1,4 +1,4 @@
-import {resetFirebaseMock, seedCollection} from '../../helpers/mockFirebase';
+import {resetFirebaseMock, seedCollection,firebaseFirestoreLiteMock} from '../../helpers/mockFirebase';
 import {ms} from '../../fixtures/factories';
 
 jest.mock('../../../api/FinanceStorage', () => ({
@@ -25,6 +25,7 @@ jest.mock('../../../utility/utility', () => {
 
 import {FinanceStorage} from '../../../api/FinanceStorage';
 import {ExpenseAPI} from '../../../api/ExpenseAPI';
+import {sleep} from '../../../utility/utility';
 
 const mockStorage = FinanceStorage as unknown as {
   getAllData: jest.Mock;
@@ -124,5 +125,44 @@ describe('ExpenseAPI.autoTagPastExpenses', () => {
     ]);
 
     expect(await ExpenseAPI.autoTagPastExpenses(ms(2026, 1, 1))).toBe(0);
+  });
+
+  it('batches updates over 700 expenses and sleeps between batches', async () => {
+    mockStorage.getAllData.mockResolvedValue([
+      {id: 'vt1', vendor: 'swiggy', tag: 'Food', date: ms(2026, 1, 1)},
+    ]);
+    const docs = Array.from({length: 701}, (_, i) => ({
+      id: `e${i}`,
+      data: {
+        vendor: 'swiggy',
+        tag: undefined,
+        modifiedDate: ms(2026, 6, 1),
+        mailId: `m${i}`,
+        cost: 10,
+        costType: 'debit',
+        date: ms(2026, 6, 1),
+        user: 'u',
+        type: 'upi',
+        operation: 'update',
+      },
+    }));
+    seedCollection('expense', docs);
+
+    const count = await ExpenseAPI.autoTagPastExpenses(ms(2026, 1, 1));
+    expect(count).toBe(701);
+    expect(mockStorage.addExpenseList).toHaveBeenCalledTimes(2);
+    expect(sleep).toHaveBeenCalledWith(1500);
+  });
+
+  it('returns 0 when Firestore query fails', async () => {
+    mockStorage.getAllData.mockResolvedValue([
+      {id: 'vt1', vendor: 'swiggy', tag: 'Food', date: ms(2026, 1, 1)},
+    ]);
+    firebaseFirestoreLiteMock.getDocs.mockRejectedValueOnce(new Error('firestore down'));
+    jest.spyOn(console, 'error').mockImplementation(() => {});
+
+    expect(await ExpenseAPI.autoTagPastExpenses(ms(2026, 1, 1))).toBe(0);
+
+    (console.error as jest.Mock).mockRestore();
   });
 });

@@ -7,6 +7,7 @@ import {generateUUID} from '../../utility/utility';
 import {formatAsOfMonth} from '../../utility/investmentCalculations';
 import {useAppTheme} from '../../theme/useAppTheme';
 import {spacing, typography} from '../../theme/tokens';
+import {isInvestmentAssetFormValid} from './editInvestmentValidation';
 
 interface EditInvestmentAssetProps {
   open: boolean;
@@ -60,18 +61,16 @@ const EditInvestmentAsset: React.FC<EditInvestmentAssetProps> = ({
   const parsedCurrentValue = parseFloat(currentValue);
   const parsedMonthlyContribution = parseFloat(monthlyContribution || '0');
   const parsedReturnRate = parseFloat(annualReturnRate);
-
-  const isFormValid = () =>
-    name.trim() !== '' &&
-    !Number.isNaN(parsedCurrentValue) &&
-    parsedCurrentValue >= 0 &&
-    !Number.isNaN(parsedMonthlyContribution) &&
-    parsedMonthlyContribution >= 0 &&
-    (!useCustomReturn ||
-      (!Number.isNaN(parsedReturnRate) && parsedReturnRate >= 0 && parsedReturnRate <= 100));
+  const formValid = isInvestmentAssetFormValid({
+    name,
+    currentValue,
+    monthlyContribution,
+    useCustomReturn,
+    annualReturnRate,
+  });
 
   const handleSave = () => {
-    if (!isFormValid()) return;
+    if (!formValid) return;
 
     const savedAsset: InvestmentAsset = {
       id: asset?.id ?? generateUUID(),
@@ -100,7 +99,7 @@ const EditInvestmentAsset: React.FC<EditInvestmentAssetProps> = ({
       title={isAddMode ? 'Add Investment' : 'Edit Investment'}
       primaryLabel={isAddMode ? 'Add' : 'Save'}
       onPrimary={handleSave}
-      primaryDisabled={!isFormValid()}
+      primaryDisabled={!formValid}
       contentStyle={styles.content}
     >
       <TextInput

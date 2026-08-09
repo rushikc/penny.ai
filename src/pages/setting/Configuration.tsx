@@ -5,6 +5,7 @@ import {MaterialCommunityIcons} from '@expo/vector-icons';
 import {ExpenseAPI} from '../../api/ExpenseAPI';
 import BottomSheetModal from '../../components/ui/BottomSheetModal';
 import {BankConfig} from '../../Types';
+import {validateCreditCardDigits} from './bankCardValidation';
 
 const Configuration: React.FC = () => {
   const theme = useTheme();
@@ -29,8 +30,8 @@ const Configuration: React.FC = () => {
   };
 
   const handleSaveCard = async () => {
-    if (!newCardDigits || !/^\d{4}$/.test(newCardDigits)) { setCardError('Enter exactly 4 digits'); return; }
-    if (bankConfig.creditCards.includes(newCardDigits)) { setCardError('Card already added'); return; }
+    const validation = validateCreditCardDigits(newCardDigits, bankConfig.creditCards);
+    if (!validation.ok) { setCardError(validation.error); return; }
     setIsSaving(true);
     const updated = {...bankConfig, creditCards: [...bankConfig.creditCards, newCardDigits]};
     const success = await ExpenseAPI.updateBankConfig(updated);
