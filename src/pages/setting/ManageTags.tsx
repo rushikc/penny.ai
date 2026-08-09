@@ -79,7 +79,7 @@ const ManageTags: React.FC = () => {
         primaryTone="danger"
         scrollable={false}
       >
-        <Text>Are you sure you want to delete "{tagToDelete}"?</Text>
+        <Text>Are you sure you want to delete &quot;{tagToDelete}&quot;?</Text>
       </BottomSheetModal>
     </View>
   );

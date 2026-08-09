@@ -46,7 +46,7 @@ const AutoTagExpenses: React.FC = () => {
   return (
     <ScrollView style={[styles.container, {backgroundColor: theme.colors.background}]}>
       <Banner visible={true} icon="information" style={{marginBottom: 16}}>
-        This feature automatically assigns tags to expenses based on vendor-tag mappings from 'Manage Vendor Tags'.
+        This feature automatically assigns tags to expenses based on vendor-tag mappings from Manage Vendor Tags.
       </Banner>
 
       <Surface style={[styles.section, {backgroundColor: theme.colors.surface}]} elevation={1}>
