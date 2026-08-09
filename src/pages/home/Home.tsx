@@ -277,12 +277,12 @@ const Home: React.FC = () => {
           onStateChange={({open}) => setFabOpen(open)}
           actions={[
             {
-              icon: 'plus',
-              label: 'Add expense',
+              icon: 'calendar-range',
+              label: 'Date range',
               color: theme.colors.primary,
               style: {backgroundColor: theme.colors.custom.card},
               labelTextColor: theme.colors.onSurface,
-              onPress: () => setShowAddExpenseDialog(true),
+              onPress: () => setShowFilterModal(true),
             },
             {
               icon: 'sort',
@@ -293,12 +293,12 @@ const Home: React.FC = () => {
               onPress: () => setShowGroupByModal(true),
             },
             {
-              icon: 'calendar-range',
-              label: 'Date range',
+              icon: 'plus',
+              label: 'Add expense',
               color: theme.colors.primary,
               style: {backgroundColor: theme.colors.custom.card},
               labelTextColor: theme.colors.onSurface,
-              onPress: () => setShowFilterModal(true),
+              onPress: () => setShowAddExpenseDialog(true),
             },
           ]}
         />
