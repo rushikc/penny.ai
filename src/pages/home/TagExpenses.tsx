@@ -9,7 +9,12 @@ import Tag from '../../components/ui/Tag';
 import {hideTagExpense, selectExpense, setTagMap, updateExpense} from '../../store/expenseActions';
 import {useAppTheme} from '../../theme/useAppTheme';
 import {spacing, typography} from '../../theme/tokens';
-import {formatVendorName, getDateMonthTime, JSONCopy} from '../../utility/utility';
+import {formatVendorName, getDateMonthTime} from '../../utility/utility';
+import {
+  buildTaggedExpense,
+  canSaveTaggedExpense,
+  resolveAutoTagMapping,
+} from './tagExpenseUtils';
 
 const TagExpenses: React.FC = () => {
   const theme = useAppTheme();
@@ -28,17 +33,17 @@ const TagExpenses: React.FC = () => {
 
   const onSaveExpense = () => {
     if (autoTag && selectedTag) {
-      const _vendor = expense.vendor;
-      const _tag = expense.tag;
-      let tagObj = vendorTagList.find(({vendor, tag}) => vendor === _vendor && tag === _tag);
-      if (!tagObj) {
-        tagObj = {id: _vendor, vendor: _vendor, tag: selectedTag, date: Date.now()};
+      const {shouldCreateMapping, tagObj} = resolveAutoTagMapping(
+        expense,
+        selectedTag,
+        vendorTagList,
+      );
+      if (shouldCreateMapping && tagObj) {
         void ExpenseAPI.updateVendorTag(tagObj);
         setTagMap(tagObj);
       }
     }
-    const expenseNew = JSONCopy(expense);
-    expenseNew.tag = selectedTag;
+    const expenseNew = buildTaggedExpense(expense, selectedTag);
     void ExpenseAPI.addExpense(expenseNew);
     updateExpense(expenseNew);
     hideTagExpense();
@@ -55,7 +60,7 @@ const TagExpenses: React.FC = () => {
       secondaryLabel="Close"
       primaryLabel="Save"
       onPrimary={onSaveExpense}
-      primaryDisabled={!selectedTag}
+      primaryDisabled={!canSaveTaggedExpense(selectedTag)}
     >
       <View style={styles.summary}>
         {vendorNames[1] ? (

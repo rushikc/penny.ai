@@ -8,6 +8,7 @@ import {addBudget, deleteBudget, selectExpense, updateBudget} from '../../store/
 import {Budget} from '../../Types';
 import {createTimedAlert} from '../../store/alertActions';
 import {useAppTheme} from '../../theme/useAppTheme';
+import {isBudgetFormValid} from './editBudgetValidation';
 
 interface EditBudgetProps {
   open: boolean;
@@ -75,8 +76,6 @@ const EditBudget: React.FC<EditBudgetProps> = ({open, budget, onClose, onBudgetU
     }
   };
 
-  const isFormValid = () => budgetName.trim() !== '' && !isNaN(parseFloat(amount)) && parseFloat(amount) > 0 && selectedTags.length > 0;
-
   return (
     <BottomSheetModal
       visible={open}
@@ -84,7 +83,7 @@ const EditBudget: React.FC<EditBudgetProps> = ({open, budget, onClose, onBudgetU
       title={isAddMode ? 'Add Budget' : 'Edit Budget'}
       primaryLabel={isAddMode ? 'Create' : 'Save'}
       onPrimary={onSaveBudget}
-      primaryDisabled={!isFormValid()}
+      primaryDisabled={!isBudgetFormValid(budgetName, amount, selectedTags)}
       contentStyle={styles.content}
     >
       <TextInput label="Budget Name" value={budgetName} onChangeText={setBudgetName} mode="outlined" style={styles.input} />

@@ -112,6 +112,29 @@ describe('calculateInvestmentProjections', () => {
     expect(projections[0].futureValue).toBe(projections[0].valueAsOfToday);
   });
 
+  it('uses asset annualReturnRate over the assumed slider rate', () => {
+    const epfAsset: InvestmentAsset = {
+      ...inrAsset,
+      id: 'epf',
+      annualReturnRate: 8.25,
+      asOfDate: today,
+      monthlyContribution: 0,
+    };
+    const {projections} = calculateInvestmentProjections(
+      [epfAsset],
+      1,
+      12,
+      95,
+      true,
+      today,
+    );
+    expect(projections[0].appliedReturnRate).toBe(8.25);
+    expect(projections[0].futureValue).toBeCloseTo(
+      calculateLumpSumFutureValue(epfAsset.currentValue, 8.25, 1),
+      2,
+    );
+  });
+
   it('has zero gain at horizon 0 with no accrual', () => {
     const freshAsset: InvestmentAsset = {
       ...inrAsset,

@@ -2,6 +2,7 @@ import React from 'react';
 import {StyleSheet, View, ViewStyle} from 'react-native';
 import {useAppTheme} from '../../theme/useAppTheme';
 import {radius} from '../../theme/tokens';
+import {clampProgressPercent, getProgressTone} from '../../pages/budget/budgetProgressStyle';
 
 interface ProgressTrackProps {
   /** 0-100 percentage of the budget spent. */
@@ -17,11 +18,12 @@ interface ProgressTrackProps {
 const ProgressTrack: React.FC<ProgressTrackProps> = ({percentage, style, height = 8}) => {
   const theme = useAppTheme();
 
-  const clamped = Math.max(0, Math.min(100, percentage));
+  const clamped = clampProgressPercent(percentage);
+  const tone = getProgressTone(percentage);
   const fillColor =
-    percentage >= 100
+    tone === 'danger'
       ? theme.colors.custom.danger
-      : percentage >= 85
+      : tone === 'warning'
         ? theme.colors.custom.warning
         : theme.colors.primary;
 

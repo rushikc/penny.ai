@@ -3,6 +3,7 @@ import {
   calculateBudgetProgress,
   filterExpensesByMonth,
 } from '../../pages/budget/budgetCalculations';
+import {clampProgressPercent, getProgressTone} from '../../pages/budget/budgetProgressStyle';
 import {makeBudget, makeExpense, ms} from '../fixtures/factories';
 
 describe('filterExpensesByMonth', () => {
@@ -67,5 +68,32 @@ describe('calculateBudgetProgress', () => {
     expect(progress.spent).toBe(0);
     expect(progress.remaining).toBe(1000);
     expect(progress.percentage).toBe(0);
+  });
+
+  it('sums multiple tags in a single budget', () => {
+    const [progress] = calculateBudgetProgress(expenses, [
+      makeBudget({amount: 3000, tagList: ['Food', 'Travel']}),
+    ]);
+    expect(progress.spent).toBe(1000 + 500 + 800);
+  });
+
+  it('produces Infinity percentage when budget amount is zero and there is spend', () => {
+    const [progress] = calculateBudgetProgress(expenses, [
+      makeBudget({amount: 0, tagList: ['Food']}),
+    ]);
+    expect(progress.spent).toBe(1500);
+    expect(progress.percentage).toBe(Infinity);
+  });
+});
+
+describe('budget progress tone', () => {
+  it('maps percentage bands and clamps fill width', () => {
+    expect(getProgressTone(84.9)).toBe('primary');
+    expect(getProgressTone(85)).toBe('warning');
+    expect(getProgressTone(99.9)).toBe('warning');
+    expect(getProgressTone(100)).toBe('danger');
+    expect(getProgressTone(150)).toBe('danger');
+    expect(clampProgressPercent(-10)).toBe(0);
+    expect(clampProgressPercent(150)).toBe(100);
   });
 });

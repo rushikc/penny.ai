@@ -1,5 +1,8 @@
 import {resetFirebaseMock, seedCollection} from '../../helpers/mockFirebase';
 import {expenseSlice} from '../../../store/expenseSlice';
+import {store} from '../../../store/store';
+import {createTimedAlert, removeAlert} from '../../../store/alertActions';
+import {SETTINGS_TILE_ROUTES} from '../../../pages/setting/settingsRoutes';
 
 jest.mock('../../../api/FinanceStorage', () => ({
   FinanceStorage: {
@@ -76,9 +79,46 @@ describe('alerts', () => {
   });
 });
 
+describe('alertActions wrappers', () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+    store.dispatch(actions.clearAllAlerts());
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+    store.dispatch(actions.clearAllAlerts());
+  });
+
+  it('createTimedAlert adds an alert and removes it after the default timeout', () => {
+    const id = createTimedAlert({type: 'success', message: 'Saved'});
+    expect(id).toBeTruthy();
+    expect(store.getState().expense.alerts).toEqual([
+      expect.objectContaining({id, type: 'success', message: 'Saved'}),
+    ]);
+
+    jest.advanceTimersByTime(3000);
+    expect(store.getState().expense.alerts).toEqual([]);
+  });
+
+  it('createTimedAlert honors a custom timeout', () => {
+    const id = createTimedAlert({type: 'info', message: 'Wait'}, 1000);
+    jest.advanceTimersByTime(999);
+    expect(store.getState().expense.alerts.map(a => a.id)).toEqual([id]);
+    jest.advanceTimersByTime(1);
+    expect(store.getState().expense.alerts).toEqual([]);
+  });
+
+  it('removeAlert wrapper clears a specific alert immediately', () => {
+    const id = createTimedAlert({type: 'error', message: 'Nope'}, 10_000);
+    removeAlert(id);
+    expect(store.getState().expense.alerts).toEqual([]);
+  });
+});
+
 describe('settings tile routes', () => {
-  it('covers the profile dashboard destinations', () => {
-    const routes = [
+  it('matches the exported profile dashboard destinations', () => {
+    expect(SETTINGS_TILE_ROUTES).toEqual([
       '/setting-tags',
       '/toggle-theme',
       '/reload-expense',
@@ -86,9 +126,6 @@ describe('settings tile routes', () => {
       '/setting-tag-maps',
       '/auto-tag-expenses',
       '/signout',
-    ];
-    expect(routes).toContain('/investment-calculator');
-    expect(routes).toContain('/setting-tags');
-    expect(routes).toContain('/auto-tag-expenses');
+    ]);
   });
 });

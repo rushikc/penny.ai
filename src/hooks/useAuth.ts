@@ -2,44 +2,20 @@ import {useEffect, useState} from 'react';
 import {onAuthStateChanged, User} from 'firebase/auth';
 import {auth} from '../firebase/firebaseConfig';
 import {FinanceStorage} from '../api/FinanceStorage';
+import {loadingUserProfile, mapAuthUserToProfile, UserProfile} from './userProfile';
 
-export interface UserProfile {
-  name: string;
-  email: string;
-  photoUrl: string | null;
-  uid: string | null;
-}
+export type {UserProfile};
 
 export const useAuth = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [userProfile, setUserProfile] = useState<UserProfile>({
-    name: 'Loading...',
-    email: 'Loading...',
-    photoUrl: null,
-    uid: null
-  });
+  const [userProfile, setUserProfile] = useState<UserProfile>(loadingUserProfile);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);
       setIsLoading(false);
-
-      if (user) {
-        setUserProfile({
-          name: user.displayName || 'User',
-          email: user.email || 'No email',
-          photoUrl: user.photoURL,
-          uid: user.uid
-        });
-      } else {
-        setUserProfile({
-          name: 'Not signed in',
-          email: 'Please sign in',
-          photoUrl: null,
-          uid: null
-        });
-      }
+      setUserProfile(mapAuthUserToProfile(user));
     });
 
     return () => unsubscribe();

@@ -42,7 +42,15 @@ describe('month year helpers', () => {
       'Jun 2026',
     );
     expect(getHomeDateFilterLabel({mode: 'relative', range: '7d'})).toBe('Last 7 Days');
+    expect(getHomeDateFilterLabel({mode: 'relative', range: '14d'})).toBe('Last 2 Weeks');
+    expect(getHomeDateFilterLabel({mode: 'relative', range: '30d'})).toBe('Last Month');
     expect(relativeFilterOptions.map(o => o.id)).toEqual(['7d', '14d', '30d']);
+  });
+
+  it('falls back to Date range for unknown relative ids', () => {
+    expect(
+      getHomeDateFilterLabel({mode: 'relative', range: '99d' as '7d'}),
+    ).toBe('Date range');
   });
 });
 
