@@ -1,13 +1,69 @@
-import {Expense} from '../Types';
+import {Expense, MonthYear} from '../Types';
 import dayjs from 'dayjs';
 import {getDateMonth, sortByKey} from '../utility/utility';
 import {ExpenseAPI} from '../api/ExpenseAPI';
 import {setBudgetList, setExpenseState, setTagList} from '../store/expenseActions';
 
 export type DateRange = '1d' | '7d' | '14d' | '30d' | '60d' | '90d' | '180d' | '366d' | '732d' | '1800d';
+/** Relative ranges shown alongside the calendar-month picker on Home. */
+export type RelativeDateRange = '7d' | '14d' | '30d';
+export type HomeDateFilter =
+  | {mode: 'month'; monthYear: MonthYear}
+  | {mode: 'relative'; range: RelativeDateRange};
 export type GroupByOption = 'days' | 'vendor' | 'cost' | 'tags';
 export type SortByOption = 'cost' | 'count' | 'date' | null;
 export type CalculationOption = 'average' | 'median';
+
+export const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+export const createMonthYear = (month: number, year: number): MonthYear => ({
+  month,
+  year,
+  label: `${MONTH_NAMES[month]} ${year}`,
+  value: `${year}-${String(month + 1).padStart(2, '0')}`,
+});
+
+export const getCurrentMonthYear = (): MonthYear => {
+  const now = dayjs();
+  return createMonthYear(now.month(), now.year());
+};
+
+export const getDefaultHomeDateFilter = (): HomeDateFilter => ({
+  mode: 'month',
+  monthYear: getCurrentMonthYear(),
+});
+
+export const relativeFilterOptions: {id: RelativeDateRange; label: string}[] = [
+  {id: '7d', label: 'Last 7 Days'},
+  {id: '14d', label: 'Last 2 Weeks'},
+  {id: '30d', label: 'Last Month'},
+];
+
+export const getHomeDateFilterLabel = (filter: HomeDateFilter): string => {
+  if (filter.mode === 'month') return filter.monthYear.label;
+  return relativeFilterOptions.find(o => o.id === filter.range)?.label ?? 'Date range';
+};
+
+export const filterExpensesByMonthYear = (
+  expenses: Expense[],
+  monthYear: MonthYear,
+): Expense[] => {
+  if (expenses.length === 0) return [];
+  return expenses.filter(expense => {
+    const d = dayjs(new Date(expense.date));
+    return d.year() === monthYear.year && d.month() === monthYear.month;
+  });
+};
+
+export const filterExpensesByHomeDateFilter = (
+  expenses: Expense[],
+  filter: HomeDateFilter,
+): Expense[] => {
+  if (filter.mode === 'month') {
+    return filterExpensesByMonthYear(expenses, filter.monthYear);
+  }
+  return filterExpensesByDate(expenses, filter.range);
+};
 
 export const loadInitialAppData = () => {
   console.log('Load Initial AppData');
@@ -44,7 +100,7 @@ export const filterOptions: { id: DateRange, label: string }[] = [
   {id: '180d', label: '6 Month'},
   {id: '366d', label: '1 year'},
   {id: '732d', label: '2 year'},
-  {id: '1800d', label: 'All Time'}
+  {id: '1800d', label: 'All Time'},
 ];
 
 export const groupByOptions: { id: GroupByOption, label: string }[] = [

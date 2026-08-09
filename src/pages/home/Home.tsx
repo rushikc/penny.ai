@@ -4,11 +4,26 @@ import {Chip, Divider, FAB, Text} from 'react-native-paper';
 import BottomSheetModal from '../../components/ui/BottomSheetModal';
 import {MaterialCommunityIcons} from '@expo/vector-icons';
 import {useSelector} from 'react-redux';
-import {Expense} from '../../Types';
+import dayjs from 'dayjs';
+import {Expense, MonthYear} from '../../Types';
 import Loading from '../../components/Loading';
 import {deleteExpense, mergeSaveExpense, selectExpense, setExpenseList, setTagExpense} from '../../store/expenseActions';
 import {formatVendorName, getDateMonth, sortByKey} from '../../utility/utility';
-import {DateRange, filterExpensesByDate, filterOptions, GroupByOption, groupByOptions, GroupedExpenses, groupExpenses, searchExpenses, SortByOption, sortByOptions} from '../dataValidations';
+import {
+  createMonthYear,
+  filterExpensesByHomeDateFilter,
+  getDefaultHomeDateFilter,
+  GroupByOption,
+  groupByOptions,
+  GroupedExpenses,
+  groupExpenses,
+  HomeDateFilter,
+  RelativeDateRange,
+  relativeFilterOptions,
+  searchExpenses,
+  SortByOption,
+  sortByOptions,
+} from '../dataValidations';
 import {ExpenseAPI} from '../../api/ExpenseAPI';
 import TagExpenses from './TagExpenses';
 import AddExpense from './AddExpense';
@@ -23,7 +38,8 @@ import {spacing, typography} from '../../theme/tokens';
 const Home: React.FC = () => {
   const theme = useAppTheme();
   const {expenseList, isAppLoading, isTagModal} = useSelector(selectExpense);
-  const [selectedRange, setSelectedRange] = useState<DateRange>('7d');
+  const [dateFilter, setDateFilter] = useState<HomeDateFilter>(getDefaultHomeDateFilter);
+  const [selectedYear, setSelectedYear] = useState(dayjs().year());
   const [filteredExpenses, setFilteredExpenses] = useState<Expense[]>([]);
   const [isLoading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -38,14 +54,21 @@ const Home: React.FC = () => {
   const [showGroupByModal, setShowGroupByModal] = useState(false);
   const [showMergeDialog, setShowMergeDialog] = useState(false);
   const [showAddExpenseDialog, setShowAddExpenseDialog] = useState(false);
+  const [fabOpen, setFabOpen] = useState(false);
 
   useEffect(() => { setLoading(isAppLoading); }, [isAppLoading]);
 
   useEffect(() => {
+    if (dateFilter.mode === 'month') {
+      setSelectedYear(dateFilter.monthYear.year);
+    }
+  }, [dateFilter]);
+
+  useEffect(() => {
     if (expenseList.length === 0) { setDateFilteredExpenses([]); return; }
-    const filtered = filterExpensesByDate(expenseList, selectedRange);
+    const filtered = filterExpensesByHomeDateFilter(expenseList, dateFilter);
     setDateFilteredExpenses(sortByKey(filtered, 'date'));
-  }, [expenseList, selectedRange]);
+  }, [expenseList, dateFilter]);
 
   useEffect(() => {
     setFilteredExpenses(searchExpenses(dateFilteredExpenses, searchTerm));
@@ -111,6 +134,24 @@ const Home: React.FC = () => {
   const toggleGroupCollapse = (groupKey: string) => {
     setCollapsedGroups(prev => ({...prev, [groupKey]: !prev[groupKey]}));
   };
+
+  const selectMonth = (monthYear: MonthYear) => {
+    setDateFilter({mode: 'month', monthYear});
+    setShowFilterModal(false);
+  };
+
+  const selectRelativeRange = (range: RelativeDateRange) => {
+    setDateFilter({mode: 'relative', range});
+    setShowFilterModal(false);
+  };
+
+  const currentDate = dayjs();
+  const years = [currentDate.year(), currentDate.year() - 1, currentDate.year() - 2];
+  const maxMonth = selectedYear === currentDate.year() ? currentDate.month() : 11;
+  const monthOptions: MonthYear[] = [];
+  for (let m = 0; m <= maxMonth; m++) {
+    monthOptions.push(createMonthYear(m, selectedYear));
+  }
 
   const sortedGroupKeys = Object.entries(groupedExpenses)
     .sort(([keyA, a], [keyB, b]) => {
@@ -214,19 +255,8 @@ const Home: React.FC = () => {
         )}
       </ScrollView>
 
-      {/* Floating action bar: filter chip | FAB | sort chip */}
-      <View style={styles.floatingBar} pointerEvents="box-none">
-        {!selectionMode ? (
-          <>
-            <Chip icon="filter-variant" onPress={() => setShowFilterModal(true)} style={[styles.floatChip, {backgroundColor: theme.colors.custom.card}]} elevated compact>
-              {filterOptions.find(o => o.id === selectedRange)?.label}
-            </Chip>
-            <FAB icon="plus" style={[styles.fab, {backgroundColor: theme.colors.primary}]} color="#FFFFFF" onPress={() => setShowAddExpenseDialog(true)} />
-            <Chip icon="sort" onPress={() => setShowGroupByModal(true)} style={[styles.floatChip, {backgroundColor: theme.colors.custom.card}]} elevated compact>
-              {groupByOptions.find(o => o.id === selectedGroupBy)?.label}
-            </Chip>
-          </>
-        ) : (
+      {selectionMode ? (
+        <View style={styles.floatingBar} pointerEvents="box-none">
           <View style={[styles.selectionBar, {backgroundColor: theme.colors.custom.card}]}>
             <Chip icon="close" onPress={cancelSelection} style={styles.chip} compact>{selectedExpenses.length} selected</Chip>
             <Chip icon="delete" onPress={handleDeleteSelected} style={[styles.chip, {backgroundColor: theme.colors.errorContainer}]} compact>Delete</Chip>
@@ -234,19 +264,86 @@ const Home: React.FC = () => {
               <Chip icon="merge" onPress={() => setShowMergeDialog(true)} style={styles.chip} compact>Merge</Chip>
             )}
           </View>
-        )}
-      </View>
+        </View>
+      ) : (
+        <FAB.Group
+          open={fabOpen}
+          visible
+          icon={fabOpen ? 'close' : 'plus'}
+          accessibilityLabel={fabOpen ? 'Close actions' : 'Open actions'}
+          fabStyle={[styles.fab, {backgroundColor: theme.colors.primary}]}
+          color="#FFFFFF"
+          backdropColor="rgba(0, 0, 0, 0.32)"
+          style={styles.fabGroup}
+          onStateChange={({open}) => setFabOpen(open)}
+          actions={[
+            {
+              icon: 'calendar-range',
+              label: 'Date range',
+              color: theme.colors.primary,
+              style: {backgroundColor: theme.colors.custom.card},
+              labelTextColor: theme.colors.onSurface,
+              onPress: () => setShowFilterModal(true),
+            },
+            {
+              icon: 'sort',
+              label: 'Sort by',
+              color: theme.colors.primary,
+              style: {backgroundColor: theme.colors.custom.card},
+              labelTextColor: theme.colors.onSurface,
+              onPress: () => setShowGroupByModal(true),
+            },
+            {
+              icon: 'plus',
+              label: 'Add expense',
+              color: theme.colors.primary,
+              style: {backgroundColor: theme.colors.custom.card},
+              labelTextColor: theme.colors.onSurface,
+              onPress: () => setShowAddExpenseDialog(true),
+            },
+          ]}
+        />
+      )}
 
       <BottomSheetModal
         visible={showFilterModal}
         onDismiss={() => setShowFilterModal(false)}
-        title="Filter by date range"
+        title="Date range"
         hideFooter
       >
+        <Text variant="titleMedium" style={{marginBottom: 8, color: theme.colors.onSurface}}>Year</Text>
         <View style={styles.chipGrid}>
-          {filterOptions.map(option => (
-            <Chip key={option.id} selected={selectedRange === option.id} onPress={() => { setSelectedRange(option.id); setShowFilterModal(false); }}
-              style={styles.filterChip}>{option.label}</Chip>
+          {years.map(y => (
+            <Chip key={y} selected={selectedYear === y} onPress={() => setSelectedYear(y)} style={styles.filterChip}>
+              {y.toString()}
+            </Chip>
+          ))}
+        </View>
+        <Text variant="titleMedium" style={{marginTop: 16, marginBottom: 8, color: theme.colors.onSurface}}>Month</Text>
+        <View style={styles.chipGrid}>
+          {monthOptions.map(option => (
+            <Chip
+              key={option.value}
+              selected={dateFilter.mode === 'month' && dateFilter.monthYear.value === option.value}
+              onPress={() => selectMonth(option)}
+              style={styles.filterChip}
+            >
+              {option.label}
+            </Chip>
+          ))}
+        </View>
+        <Divider style={{marginVertical: 16, backgroundColor: theme.colors.custom.border}} />
+        <Text variant="titleMedium" style={{marginBottom: 8, color: theme.colors.onSurface}}>Quick range</Text>
+        <View style={styles.chipGrid}>
+          {relativeFilterOptions.map(option => (
+            <Chip
+              key={option.id}
+              selected={dateFilter.mode === 'relative' && dateFilter.range === option.id}
+              onPress={() => selectRelativeRange(option.id)}
+              style={styles.filterChip}
+            >
+              {option.label}
+            </Chip>
           ))}
         </View>
       </BottomSheetModal>
@@ -298,10 +395,10 @@ const styles = StyleSheet.create({
   groupTitle: {...typography.cardTitle},
   metaRow: {flexDirection: 'row', alignItems: 'center', gap: spacing.sm},
   amount: {...typography.amountRow},
-  floatingBar: {position: 'absolute', left: 0, right: 0, bottom: spacing.lg, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: spacing.lg, gap: spacing.md},
-  floatChip: {borderRadius: 999},
-  selectionBar: {flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: spacing.sm, borderRadius: 999, paddingVertical: spacing.xs, paddingHorizontal: spacing.sm, flexWrap: 'wrap'},
+  floatingBar: {position: 'absolute', left: 0, right: 0, bottom: spacing.lg, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingHorizontal: spacing.lg},
+  selectionBar: {flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: spacing.sm, borderRadius: 999, paddingVertical: spacing.xs, paddingHorizontal: spacing.sm, flexWrap: 'wrap'},
   chip: {marginVertical: 2},
+  fabGroup: {paddingBottom: spacing.sm},
   fab: {borderRadius: 32},
   chipGrid: {flexDirection: 'row', flexWrap: 'wrap', gap: 8},
   filterChip: {marginBottom: 4},
