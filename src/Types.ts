@@ -32,6 +32,25 @@ export interface BankConfig {
   creditCards: string[];
 }
 
+export interface InvestmentAsset {
+  id: string;
+  name: string;
+  currentValue: number;
+  monthlyContribution: number;
+  currency: 'INR' | 'USD';
+  /** When omitted, projections follow the Expected Return slider. */
+  annualReturnRate?: number;
+  /** Epoch ms when currentValue / monthlyContribution were last set. */
+  asOfDate?: number;
+}
+
+export interface InvestmentConfig {
+  assets: InvestmentAsset[];
+  includeSip: boolean;
+  years: number;
+  assumedReturnRate: number;
+}
+
 export interface Config {
   key: string,
   value: string | number

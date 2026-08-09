@@ -3,7 +3,8 @@ import {BUDGET_LAST_UPDATE, EXPENSE_LAST_UPDATE, TAG_LAST_UPDATE} from '../utili
 import {db} from '../firebase/firebaseConfig';
 import {getDateJsIdFormat, getUnixTimestamp, JSONCopy, sleep} from '../utility/utility';
 import {FinanceStorage} from './FinanceStorage';
-import {BankConfig, Budget, Expense, VendorTag} from '../Types';
+import {BankConfig, Budget, Expense, InvestmentConfig, VendorTag} from '../Types';
+import {DEFAULT_INVESTMENT_CONFIG, DEFAULT_INVESTMENT_ASSETS} from '../utility/investmentCalculations';
 
 // eslint-disable-next-line
 export type DocumentData = { [field: string]: unknown };
@@ -186,6 +187,35 @@ export class ExpenseAPI {
       return true;
     } catch (e) {
       console.error('Error updating dark mode:', e);
+      return false;
+    }
+  };
+
+  static getInvestmentConfig = async (): Promise<InvestmentConfig> => {
+    try {
+      const cfg = await ExpenseAPI.getOneDoc('investments', 'config');
+      if (!cfg) {
+        return DEFAULT_INVESTMENT_CONFIG;
+      }
+
+      return {
+        assets: cfg.assets?.length ? cfg.assets : DEFAULT_INVESTMENT_ASSETS,
+        includeSip: cfg.includeSip ?? true,
+        years: cfg.years ?? DEFAULT_INVESTMENT_CONFIG.years,
+        assumedReturnRate: cfg.assumedReturnRate ?? DEFAULT_INVESTMENT_CONFIG.assumedReturnRate,
+      };
+    } catch (e) {
+      console.error('Error getting investment config:', e);
+      return DEFAULT_INVESTMENT_CONFIG;
+    }
+  };
+
+  static updateInvestmentConfig = async (config: InvestmentConfig) => {
+    try {
+      await ExpenseAPI.setOneDoc('investments', config, 'config');
+      return true;
+    } catch (e) {
+      console.error('Error updating investment config:', e);
       return false;
     }
   };
