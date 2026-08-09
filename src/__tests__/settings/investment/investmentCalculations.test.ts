@@ -1,12 +1,19 @@
-import {InvestmentAsset} from '../../Types';
+import {InvestmentAsset} from '../../../Types';
 import {
   calculateInvestmentProjections,
   calculateLumpSumForMonths,
   calculateSipFutureValueForMonths,
   calculateValueAsOfToday,
+  creditDateForCalendarMonth,
+  DEFAULT_INVESTMENT_CONFIG,
   elapsedCreditMonths,
+  formatAsOfMonth,
   formatHorizonLabel,
-} from '../investmentCalculations';
+  calculateLumpSumFutureValue,
+  calculateSipFutureValue,
+  calculateAssetFutureValue,
+  SIP_CREDIT_DAY,
+} from '../../../utility/investmentCalculations';
 
 const ms = (year: number, month: number, day: number) => new Date(year, month - 1, day).getTime();
 
@@ -175,5 +182,73 @@ describe('formatHorizonLabel', () => {
 
   it('returns plural years label', () => {
     expect(formatHorizonLabel(5)).toBe('5 years');
+  });
+});
+
+describe('creditDateForCalendarMonth', () => {
+  it('posts on the 3rd of the next month', () => {
+    const credit = creditDateForCalendarMonth(2026, 0);
+    const d = new Date(credit);
+    expect(d.getFullYear()).toBe(2026);
+    expect(d.getMonth()).toBe(1);
+    expect(d.getDate()).toBe(SIP_CREDIT_DAY);
+  });
+});
+
+describe('year-based FV wrappers', () => {
+  it('calculates lump sum FV for years', () => {
+    expect(calculateLumpSumFutureValue(1000, 12, 1)).toBeCloseTo(
+      calculateLumpSumForMonths(1000, 12, 12),
+      6,
+    );
+  });
+
+  it('calculates SIP FV for years', () => {
+    expect(calculateSipFutureValue(1000, 12, 1)).toBeCloseTo(
+      calculateSipFutureValueForMonths(1000, 12, 12),
+      6,
+    );
+  });
+
+  it('returns principal when months are zero', () => {
+    expect(calculateLumpSumForMonths(500, 12, 0)).toBe(500);
+  });
+
+  it('returns 0 SIP when contribution or months is zero', () => {
+    expect(calculateSipFutureValueForMonths(0, 12, 12)).toBe(0);
+    expect(calculateSipFutureValueForMonths(1000, 12, 0)).toBe(0);
+  });
+
+  it('handles zero interest SIP as simple product', () => {
+    expect(calculateSipFutureValueForMonths(1000, 0, 5)).toBe(5000);
+  });
+
+  it('combines lump sum and SIP when includeSip is true', () => {
+    const combined = calculateAssetFutureValue(10_000, 1000, 12, 1, true);
+    const expected =
+      calculateLumpSumFutureValue(10_000, 12, 1) + calculateSipFutureValue(1000, 12, 1);
+    expect(combined).toBeCloseTo(expected, 6);
+  });
+
+  it('excludes SIP when includeSip is false', () => {
+    expect(calculateAssetFutureValue(10_000, 1000, 12, 1, false)).toBeCloseTo(
+      calculateLumpSumFutureValue(10_000, 12, 1),
+      6,
+    );
+  });
+});
+
+describe('defaults and formatAsOfMonth', () => {
+  it('exposes default investment config with assets', () => {
+    expect(DEFAULT_INVESTMENT_CONFIG.assets.length).toBeGreaterThan(0);
+    expect(DEFAULT_INVESTMENT_CONFIG.assumedReturnRate).toBe(12);
+  });
+
+  it('formats missing asOf as today', () => {
+    expect(formatAsOfMonth(undefined)).toBe('today');
+  });
+
+  it('formats asOf month/year', () => {
+    expect(formatAsOfMonth(ms(2026, 1, 15))).toMatch(/2026/);
   });
 });
